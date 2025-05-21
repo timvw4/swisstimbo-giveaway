@@ -39,9 +39,9 @@ export default function Admin() {
   )
 
   const exportToCSV = () => {
-    const headers = ['Nom', 'Âge', 'Pseudo Instagram', 'Date d\'inscription']
+    const headers = ['Nom', 'Âge', 'Pseudo Instagram', 'Date et heure d\'inscription']
     const csvData = filteredParticipants.map(p => 
-      `${p.nom},${p.age},${p.pseudoinstagram},${new Date(p.created_at).toLocaleDateString()}`
+      `${p.nom},${p.age},${p.pseudoinstagram},${new Date(p.created_at).toLocaleString()}`
     )
     
     const csv = [headers.join(','), ...csvData].join('\n')
@@ -136,7 +136,7 @@ export default function Admin() {
                     <td className="px-3 md:px-6 py-4 text-sm">{participant.age}</td>
                     <td className="px-3 md:px-6 py-4 text-sm">{participant.pseudoinstagram}</td>
                     <td className="px-3 md:px-6 py-4 text-sm">
-                      {new Date(participant.created_at).toLocaleDateString()}
+                      {new Date(participant.created_at).toLocaleString()}
                     </td>
                   </tr>
                 ))}

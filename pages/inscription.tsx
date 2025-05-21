@@ -52,6 +52,10 @@ export default function Inscription() {
         return
       }
 
+      // Créer la date avec l'heure exacte
+      const now = new Date()
+      const isoDateTime = now.toISOString()
+
       // Insérer le nouveau participant
       const { error: insertError } = await supabase
         .from('participants')
@@ -59,7 +63,7 @@ export default function Inscription() {
           nom: formData.nom,
           age: parseInt(formData.age),
           pseudoinstagram: '@' + formData.pseudoInstagram,
-          created_at: new Date().toISOString()
+          created_at: isoDateTime // Utilisation de la date et heure exacte
         }])
 
       if (insertError) {
