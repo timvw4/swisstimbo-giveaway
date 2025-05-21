@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-white text-black;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-dollar-green text-white px-4 py-2 rounded hover:bg-opacity-90 transition;
+  }
+} 
