@@ -79,12 +79,12 @@ export default function Tirage() {
 
   return (
     <Layout>
-      <div className="max-w-4xl mx-auto text-center">
-        <h1 className="text-4xl font-bold mb-8">Tirage au sort</h1>
+      <div className="max-w-4xl mx-auto text-center px-4">
+        <h1 className="text-2xl md:text-4xl font-bold mb-6 md:mb-8">Tirage au sort</h1>
         
-        <div className="mb-8">
-          <h2 className="text-2xl mb-4">Prochain tirage dans :</h2>
-          <div className="text-3xl font-bold">
+        <div className="mb-6 md:mb-8">
+          <h2 className="text-xl md:text-2xl mb-3 md:mb-4">Prochain tirage dans :</h2>
+          <div className="text-2xl md:text-3xl font-bold">
             <Countdown 
               date={getNextDrawDate()} 
               onComplete={handleCountdownComplete}
@@ -93,8 +93,8 @@ export default function Tirage() {
         </div>
 
         {isClient && participants.length > 0 ? (
-          <div className="mb-8">
-            <div className="max-w-md mx-auto mb-8">
+          <div className="mb-6 md:mb-8">
+            <div className="max-w-[280px] md:max-w-md mx-auto mb-6 md:mb-8">
               <DrawWheel
                 participants={participants}
                 isSpinning={isSpinning}
@@ -104,16 +104,16 @@ export default function Tirage() {
             </div>
             
             {!isSpinning && winner && (
-              <div className="bg-dollar-green text-white p-6 rounded-lg">
-                <h3 className="text-2xl mb-2">Félicitations !</h3>
-                <p className="text-xl">
+              <div className="bg-dollar-green text-white p-4 md:p-6 rounded-lg">
+                <h3 className="text-xl md:text-2xl mb-2">Félicitations !</h3>
+                <p className="text-lg md:text-xl">
                   Le gagnant est : <strong>{winner.pseudoinstagram}</strong>
                 </p>
               </div>
             )}
           </div>
         ) : (
-          <p className="text-xl">Aucun participant pour le moment</p>
+          <p className="text-lg md:text-xl">Aucun participant pour le moment</p>
         )}
       </div>
     </Layout>

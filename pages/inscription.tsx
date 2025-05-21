@@ -81,47 +81,47 @@ export default function Inscription() {
 
   return (
     <Layout>
-      <div className="max-w-md mx-auto">
-        <h1 className="text-3xl font-bold mb-8 text-center">Inscription au tirage</h1>
+      <div className="max-w-md mx-auto px-4">
+        <h1 className="text-2xl md:text-3xl font-bold mb-6 md:mb-8 text-center">Inscription au tirage</h1>
         
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 text-sm md:text-base">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
           <div>
-            <label className="block mb-2">Nom complet</label>
+            <label className="block mb-2 text-sm md:text-base">Nom complet</label>
             <input
               type="text"
               required
-              className="w-full p-2 border rounded"
+              className="w-full p-3 border rounded text-base"
               value={formData.nom}
               onChange={(e) => setFormData({...formData, nom: e.target.value})}
             />
           </div>
 
           <div>
-            <label className="block mb-2">Âge</label>
+            <label className="block mb-2 text-sm md:text-base">Âge</label>
             <input
               type="number"
               required
               min="18"
-              className="w-full p-2 border rounded"
+              className="w-full p-3 border rounded text-base"
               value={formData.age}
               onChange={(e) => setFormData({...formData, age: e.target.value})}
             />
           </div>
 
           <div>
-            <label className="block mb-2">Pseudo Instagram</label>
+            <label className="block mb-2 text-sm md:text-base">Pseudo Instagram</label>
             <div className="flex items-center">
-              <span className="bg-gray-100 px-3 py-2 border border-r-0 rounded-l">@</span>
+              <span className="bg-gray-100 px-3 py-3 border border-r-0 rounded-l text-base">@</span>
               <input
                 type="text"
                 required
-                className="w-full p-2 border border-l-0 rounded-r"
+                className="w-full p-3 border border-l-0 rounded-r text-base"
                 value={formData.pseudoInstagram}
                 onChange={handlePseudoChange}
                 placeholder="votre_pseudo"
@@ -130,11 +130,11 @@ export default function Inscription() {
           </div>
 
           <div>
-            <label className="flex items-center">
+            <label className="flex items-center text-sm md:text-base">
               <input
                 type="checkbox"
                 required
-                className="mr-2"
+                className="mr-2 w-4 h-4"
                 checked={formData.isSubscribed}
                 onChange={(e) => setFormData({...formData, isSubscribed: e.target.checked})}
               />
@@ -145,7 +145,7 @@ export default function Inscription() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-dollar-green text-white py-3 rounded hover:bg-opacity-90 transition"
+            className="w-full bg-dollar-green text-white py-4 rounded text-base md:text-lg font-medium hover:bg-opacity-90 transition"
           >
             {loading ? 'Inscription en cours...' : 'S\'inscrire'}
           </button>

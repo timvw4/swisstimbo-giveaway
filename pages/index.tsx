@@ -43,36 +43,36 @@ export default function Home() {
 
   return (
     <Layout>
-      <div className="max-w-4xl mx-auto text-center">
+      <div className="max-w-4xl mx-auto text-center px-4">
         <img 
           src="https://images.fineartamerica.com/images-medium-large/jacques-reverdin-swiss-surgeon-.jpg"
           alt="Jacques Reverdin"
-          className="w-32 h-32 mx-auto rounded-full mb-8"
+          className="w-24 h-24 md:w-32 md:h-32 mx-auto rounded-full mb-6 md:mb-8"
         />
         
-        <h1 className="text-4xl font-bold mb-6">@Jacques_reverdin</h1>
+        <h1 className="text-3xl md:text-4xl font-bold mb-4 md:mb-6">@Jacques_reverdin</h1>
         
-        <div className="bg-dollar-green text-white p-8 rounded-lg mb-8">
-          <h2 className="text-3xl mb-4">Gagnez {montantGain} CHF gratuitement !</h2>
-          <p className="text-xl mb-6">
+        <div className="bg-dollar-green text-white p-4 md:p-8 rounded-lg mb-6 md:mb-8">
+          <h2 className="text-2xl md:text-3xl mb-3 md:mb-4">Gagnez {montantGain} CHF gratuitement !</h2>
+          <p className="text-lg md:text-xl mb-4 md:mb-6">
             Participez à notre tirage au sort et tentez de gagner. 
             Il suffit d'être abonné pour participer !
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-          <div className="bg-light-gray p-6 rounded-lg">
-            <h3 className="text-2xl font-bold mb-2">{participantCount}</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8 mb-6 md:mb-8">
+          <div className="bg-light-gray p-4 md:p-6 rounded-lg">
+            <h3 className="text-xl md:text-2xl font-bold mb-2">{participantCount}</h3>
             <p>Participants</p>
           </div>
           
-          <div className="bg-light-gray p-6 rounded-lg">
-            <h3 className="text-2xl font-bold mb-2">{montantGain} CHF</h3>
+          <div className="bg-light-gray p-4 md:p-6 rounded-lg">
+            <h3 className="text-xl md:text-2xl font-bold mb-2">{montantGain} CHF</h3>
             <p>À gagner</p>
           </div>
           
-          <div className="bg-light-gray p-6 rounded-lg">
-            <h3 className="text-2xl font-bold mb-2">
+          <div className="bg-light-gray p-4 md:p-6 rounded-lg">
+            <h3 className="text-xl md:text-2xl font-bold mb-2">
               <Countdown date={getNextDrawDate()} />
             </h3>
             <p>Avant le prochain tirage</p>
@@ -81,7 +81,7 @@ export default function Home() {
 
         <a 
           href="/inscription" 
-          className="inline-block bg-dollar-green text-white px-8 py-4 rounded-lg text-xl hover:bg-opacity-90 transition"
+          className="inline-block bg-dollar-green text-white px-6 md:px-8 py-3 md:py-4 rounded-lg text-lg md:text-xl hover:bg-opacity-90 transition w-full md:w-auto"
         >
           Participer maintenant
         </a>
