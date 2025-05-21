@@ -16,7 +16,7 @@ const DrawWheel: React.FC<DrawWheelProps> = ({
   onStopSpinning
 }) => {
   const wheelData = participants.map((participant) => ({
-    option: participant.pseudoInstagram
+    option: participant.pseudoinstagram
   }))
 
   return (

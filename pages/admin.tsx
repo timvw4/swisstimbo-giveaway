@@ -34,14 +34,14 @@ export default function Admin() {
   }
 
   const filteredParticipants = participants.filter(participant => 
-    participant.pseudoInstagram.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    participant.pseudoinstagram.toLowerCase().includes(searchTerm.toLowerCase()) ||
     participant.nom.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   const exportToCSV = () => {
     const headers = ['Nom', 'Âge', 'Pseudo Instagram', 'Date d\'inscription']
     const csvData = filteredParticipants.map(p => 
-      `${p.nom},${p.age},${p.pseudoInstagram},${new Date(p.created_at).toLocaleDateString()}`
+      `${p.nom},${p.age},${p.pseudoinstagram},${new Date(p.created_at).toLocaleDateString()}`
     )
     
     const csv = [headers.join(','), ...csvData].join('\n')
@@ -133,7 +133,7 @@ export default function Admin() {
                 <tr key={participant.id}>
                   <td className="px-6 py-4 whitespace-nowrap">{participant.nom}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{participant.age}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{participant.pseudoInstagram}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{participant.pseudoinstagram}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {new Date(participant.created_at).toLocaleDateString()}
                   </td>
