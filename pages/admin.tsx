@@ -10,7 +10,7 @@ export default function Admin() {
   const [searchTerm, setSearchTerm] = useState('')
   const [error, setError] = useState('')
 
-  const ADMIN_PASSWORD = 'admin123'
+  const ADMIN_PASSWORD = 'admin.tihf'
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault()
