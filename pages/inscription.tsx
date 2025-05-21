@@ -20,12 +20,46 @@ export default function Inscription() {
     setFormData({...formData, pseudoInstagram: value})
   }
 
+  const getNextDrawDate = () => {
+    const now = new Date()
+    const day = now.getDay()
+    const hours = now.getHours()
+    let nextDate = new Date()
+    
+    if (day < 2 || (day === 2 && hours < 20)) {
+      nextDate.setDate(nextDate.getDate() + ((2 + 7 - day) % 7))
+    } else if (day < 5 || (day === 5 && hours < 20)) {
+      nextDate.setDate(nextDate.getDate() + ((5 + 7 - day) % 7))
+    } else {
+      nextDate.setDate(nextDate.getDate() + ((2 + 7 - day) % 7))
+    }
+    
+    nextDate.setHours(20, 0, 0, 0)
+    return nextDate
+  }
+
+  const isRegistrationOpen = () => {
+    const now = new Date()
+    const drawDate = getNextDrawDate()
+    const timeUntilDraw = drawDate.getTime() - now.getTime()
+    const fiveMinutesInMs = 5 * 60 * 1000
+
+    return timeUntilDraw > fiveMinutesInMs
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     setLoading(true)
 
     try {
+      // Vérifier si l'inscription est encore ouverte
+      if (!isRegistrationOpen()) {
+        setError('Les inscriptions sont fermées 5 minutes avant le tirage')
+        setLoading(false)
+        return
+      }
+
       if (parseInt(formData.age) < 18) {
         setError('Vous devez être majeur pour participer')
         setLoading(false)
@@ -81,6 +115,24 @@ export default function Inscription() {
     } finally {
       setLoading(false)
     }
+  }
+
+  // Si les inscriptions sont fermées, afficher un message
+  if (!isRegistrationOpen()) {
+    return (
+      <Layout>
+        <div className="max-w-md mx-auto px-4 text-center">
+          <h1 className="text-2xl md:text-3xl font-bold mb-6 md:mb-8">Inscription au tirage</h1>
+          <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">
+            <p className="text-lg">
+              Les inscriptions sont temporairement fermées.
+              <br />
+              Elles rouvriront après le tirage.
+            </p>
+          </div>
+        </div>
+      </Layout>
+    )
   }
 
   return (
