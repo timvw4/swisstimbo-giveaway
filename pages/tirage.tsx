@@ -1,15 +1,14 @@
 import React, { useEffect, useState } from 'react'
 import Layout from '@/components/Layout'
 import { supabase } from '@/lib/supabaseClient'
-import dynamic from 'next/dynamic'
 import Countdown from 'react-countdown'
 import { Participant } from '@/types'
+import dynamic from 'next/dynamic'
 
-// Import dynamique de la roue pour éviter l'erreur window
-const Wheel = dynamic(
-  () => import('react-custom-roulette').then((mod) => mod.Wheel),
-  { ssr: false }
-)
+// Import dynamique du composant DrawWheel
+const DrawWheel = dynamic(() => import('@/components/DrawWheel'), {
+  ssr: false
+})
 
 export default function Tirage() {
   const [participants, setParticipants] = useState<Participant[]>([])
@@ -51,7 +50,6 @@ export default function Tirage() {
     }
   }
 
-  // Gestionnaire de fin de compte à rebours
   const handleCountdownComplete = () => {
     performDraw()
   }
@@ -79,10 +77,6 @@ export default function Tirage() {
     fetchParticipants()
   }, [])
 
-  const wheelData = participants.map((participant) => ({
-    option: participant.pseudoinstagram
-  }))
-
   return (
     <Layout>
       <div className="max-w-4xl mx-auto text-center">
@@ -101,15 +95,11 @@ export default function Tirage() {
         {isClient && participants.length > 0 ? (
           <div className="mb-8">
             <div className="max-w-md mx-auto mb-8">
-              <Wheel
-                mustStartSpinning={isSpinning}
-                prizeNumber={winner ? participants.indexOf(winner) : 0}
-                data={wheelData}
-                backgroundColors={['#00724E', '#D9D9D9']}
-                textColors={['#FFFFFF']}
-                onStopSpinning={() => {
-                  setIsSpinning(false)
-                }}
+              <DrawWheel
+                participants={participants}
+                isSpinning={isSpinning}
+                winner={winner}
+                onStopSpinning={() => setIsSpinning(false)}
               />
             </div>
             
