@@ -194,7 +194,7 @@ export default function Inscription() {
                 checked={formData.isSubscribed}
                 onChange={(e) => setFormData({...formData, isSubscribed: e.target.checked})}
               />
-              Je confirme être abonné à @Jacques_reverdin
+              Je confirme être abonné à @SwissTimbo
             </label>
           </div>
 

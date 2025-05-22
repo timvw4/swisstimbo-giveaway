@@ -12,7 +12,7 @@ export default function Reglement() {
             <h2 className="text-xl md:text-2xl font-bold mb-3 md:mb-4">Article 1 - Conditions de participation</h2>
             <ul className="list-disc pl-4 md:pl-6 space-y-2 text-sm md:text-base">
               <li>Le participant doit être majeur (18 ans ou plus)</li>
-              <li>Le participant doit être abonné au compte Instagram @Jacques_reverdin</li>
+              <li>Le participant doit être abonné au compte Instagram @SwissTimbo</li>
               <li>Une seule participation par personne est autorisée</li>
               <li>La participation est gratuite et sans obligation d'achat</li>
               <li>Les inscriptions sont fermées 5 minutes avant chaque tirage</li>
@@ -46,7 +46,7 @@ export default function Reglement() {
             <ul className="list-disc pl-4 md:pl-6 space-y-2 text-sm md:text-base">
               <li>Toute tentative de fraude entraînera une disqualification immédiate</li>
               <li>Les comptes Instagram suspects ou factices seront disqualifiés</li>
-              <li>Le désabonnement du compte @Jacques_reverdin entraîne la disqualification</li>
+              <li>Le désabonnement du compte @SwissTimbo entraîne la disqualification</li>
               <li>L'utilisation de bots ou de scripts automatisés est interdite</li>
               <li>La fourniture de fausses informations entraîne la disqualification</li>
             </ul>
@@ -59,7 +59,7 @@ export default function Reglement() {
               <li>Les données ne sont pas partagées avec des tiers</li>
               <li>Les données sont supprimées après chaque tirage</li>
               <li>Conformément à la LPD, vous disposez d'un droit d'accès et de rectification</li>
-              <li>Pour toute demande concernant vos données : @Jacques_reverdin sur Instagram</li>
+              <li>Pour toute demande concernant vos données : @SwissTimbo sur Instagram</li>
             </ul>
           </section>
 
@@ -67,7 +67,7 @@ export default function Reglement() {
             <h2 className="text-xl md:text-2xl font-bold mb-3 md:mb-4">Article 6 - Modifications</h2>
             <ul className="list-disc pl-4 md:pl-6 space-y-2 text-sm md:text-base">
               <li>L'organisateur se réserve le droit de modifier le règlement à tout moment</li>
-              <li>Les modifications seront annoncées sur le compte Instagram @Jacques_reverdin</li>
+              <li>Les modifications seront annoncées sur le compte Instagram @SwissTimbo</li>
               <li>La participation implique l'acceptation pleine et entière du règlement</li>
               <li>En cas de litige, seule la version du règlement disponible sur le site fait foi</li>
             </ul>

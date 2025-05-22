@@ -12,8 +12,8 @@ export default function Layout({ children }: LayoutProps) {
   return (
     <div className="min-h-screen bg-white font-old-style">
       <Head>
-        <title>Concours Jacques Reverdin</title>
-        <meta name="description" content="Gagnez de l'argent avec @Jacques_reverdin" />
+        <title>Concours SwissTimbo</title>
+        <meta name="description" content="Gagnez de l'argent avec @SwissTimbo" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
@@ -22,7 +22,7 @@ export default function Layout({ children }: LayoutProps) {
         <div className="container mx-auto">
           <div className="flex justify-between items-center">
             <Link href="/" className="text-xl md:text-2xl font-bold">
-              @Jacques_reverdin
+              @SwissTimbo
             </Link>
             
             {/* Bouton menu hamburger pour mobile */}

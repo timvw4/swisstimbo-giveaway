@@ -25,7 +25,7 @@ const DrawWheel: React.FC<DrawWheelProps> = ({
         mustStartSpinning={isSpinning}
         prizeNumber={winner ? participants.indexOf(winner) : 0}
         data={wheelData}
-        backgroundColors={['#00724E', '#D9D9D9']}
+        backgroundColors={['#bc0b0b', '#D9D9D9']}
         textColors={['#FFFFFF']}
         onStopSpinning={onStopSpinning}
       />

@@ -45,18 +45,18 @@ export default function Home() {
     <Layout>
       <div className="max-w-4xl mx-auto text-center px-4">
         <img 
-          src="https://images.fineartamerica.com/images-medium-large/jacques-reverdin-swiss-surgeon-.jpg"
-          alt="Jacques Reverdin"
-          className="w-24 h-24 md:w-32 md:h-32 mx-auto rounded-full mb-6 md:mb-8"
+          src="/images/profile.jpg"
+          alt="SwissTimbo"
+          className="w-24 h-24 md:w-32 md:h-32 mx-auto rounded-full mb-6 md:mb-8 object-cover"
         />
         
-        <h1 className="text-3xl md:text-4xl font-bold mb-4 md:mb-6">@Jacques_reverdin</h1>
+        <h1 className="text-3xl md:text-4xl font-bold mb-4 md:mb-6">@SwissTimbo</h1>
         
         <div className="bg-dollar-green text-white p-4 md:p-8 rounded-lg mb-6 md:mb-8">
           <h2 className="text-2xl md:text-3xl mb-3 md:mb-4">Gagnez {montantGain} CHF gratuitement !</h2>
           <p className="text-lg md:text-xl mb-4 md:mb-6">
             Participez à notre tirage au sort et tentez de gagner. 
-            Il suffit d'être abonné pour participer !
+            Il suffit d'être abonné pour y participer !
           </p>
         </div>
 
