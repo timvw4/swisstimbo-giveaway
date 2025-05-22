@@ -44,11 +44,13 @@ export default function Home() {
   return (
     <Layout>
       <div className="max-w-4xl mx-auto text-center px-4">
-        <img 
-          src="/images/profile.jpg"
-          alt="SwissTimbo"
-          className="w-24 h-24 md:w-32 md:h-32 mx-auto rounded-full mb-6 md:mb-8 object-cover"
-        />
+        <div className="w-24 h-24 md:w-32 md:h-32 mx-auto mb-6 md:mb-8">
+          <img 
+            src="/images/swisstimbo.jpg"
+            alt="SwissTimbo"
+            className="w-full h-full rounded-full object-cover"
+          />
+        </div>
         
         <h1 className="text-3xl md:text-4xl font-bold mb-4 md:mb-6">@SwissTimbo</h1>
         
