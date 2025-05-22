@@ -6,9 +6,6 @@ const nextConfig = {
     domains: ['localhost', 'vercel.app'],
     unoptimized: true,
   },
-  experimental: {
-    appDir: false,
-  },
   basePath: '',
   output: 'standalone',
 }
