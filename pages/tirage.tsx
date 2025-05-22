@@ -26,12 +26,15 @@ export default function Tirage() {
     const hours = now.getHours()
     let nextDate = new Date()
     
-    if (day < 2 || (day === 2 && hours < 20)) {
-      nextDate.setDate(nextDate.getDate() + ((2 + 7 - day) % 7))
-    } else if (day < 5 || (day === 5 && hours < 20)) {
-      nextDate.setDate(nextDate.getDate() + ((5 + 7 - day) % 7))
+    if (day < 3 || (day === 3 && hours < 20)) {
+      // Prochain mercredi
+      nextDate.setDate(nextDate.getDate() + ((3 + 7 - day) % 7))
+    } else if (day < 0 || (day === 0 && hours < 20)) {
+      // Prochain dimanche
+      nextDate.setDate(nextDate.getDate() + ((0 + 7 - day) % 7))
     } else {
-      nextDate.setDate(nextDate.getDate() + ((2 + 7 - day) % 7))
+      // Prochain mercredi
+      nextDate.setDate(nextDate.getDate() + ((3 + 7 - day) % 7))
     }
     
     nextDate.setHours(20, 0, 0, 0)

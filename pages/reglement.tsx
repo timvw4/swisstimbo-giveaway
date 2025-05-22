@@ -22,7 +22,7 @@ export default function Reglement() {
           <section>
             <h2 className="text-xl md:text-2xl font-bold mb-3 md:mb-4">Article 2 - Modalités du tirage</h2>
             <ul className="list-disc pl-4 md:pl-6 space-y-2 text-sm md:text-base">
-              <li>Le tirage au sort a lieu tous les mardis et vendredis à 20h précises</li>
+              <li>Le tirage au sort a lieu tous les mercredis et dimanches à 20h précises</li>
               <li>Le gagnant est sélectionné de manière aléatoire parmi tous les participants inscrits</li>
               <li>Le résultat du tirage est définitif et ne peut être contesté</li>
               <li>Le tirage est effectué automatiquement par un système informatique</li>
