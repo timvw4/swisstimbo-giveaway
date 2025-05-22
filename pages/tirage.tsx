@@ -22,19 +22,19 @@ export default function Tirage() {
 
   const getNextDrawDate = () => {
     const now = new Date()
-    const day = now.getDay()
+    const day = now.getDay() // 0 = dimanche, 3 = mercredi
     const hours = now.getHours()
     let nextDate = new Date()
     
-    if (day < 3 || (day === 3 && hours < 20)) {
+    if (day < 0 || (day === 0 && hours >= 20)) {
       // Prochain mercredi
       nextDate.setDate(nextDate.getDate() + ((3 + 7 - day) % 7))
-    } else if (day < 0 || (day === 0 && hours < 20)) {
+    } else if (day < 3 || (day === 3 && hours >= 20)) {
       // Prochain dimanche
       nextDate.setDate(nextDate.getDate() + ((0 + 7 - day) % 7))
     } else {
-      // Prochain mercredi
-      nextDate.setDate(nextDate.getDate() + ((3 + 7 - day) % 7))
+      // Prochain dimanche
+      nextDate.setDate(nextDate.getDate() + ((0 + 7 - day) % 7))
     }
     
     nextDate.setHours(20, 0, 0, 0)
