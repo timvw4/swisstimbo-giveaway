@@ -3,8 +3,14 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   images: {
-    domains: ['images.fineartamerica.com'],
+    domains: ['localhost', 'vercel.app'],
+    unoptimized: true,
   },
+  experimental: {
+    appDir: false,
+  },
+  basePath: '',
+  output: 'standalone',
 }
 
 module.exports = nextConfig 

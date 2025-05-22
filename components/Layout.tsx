@@ -53,6 +53,9 @@ export default function Layout({ children }: LayoutProps) {
               <Link href="/reglement" className="hover:text-light-gray">
                 Règlement
               </Link>
+              <Link href="/about" className="hover:text-light-gray">
+                À propos
+              </Link>
             </div>
           </div>
 
@@ -87,6 +90,13 @@ export default function Layout({ children }: LayoutProps) {
               >
                 Règlement
               </Link>
+              <Link 
+                href="/about" 
+                className="hover:text-light-gray py-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                À propos
+              </Link>
             </div>
           </div>
         </div>
@@ -98,7 +108,7 @@ export default function Layout({ children }: LayoutProps) {
 
       <footer className="bg-light-gray p-4 mt-8">
         <div className="container mx-auto text-center text-sm md:text-base">
-          <p>© 2024 Jacques Reverdin - Tous droits réservés</p>
+          <p>© 2024 Swiss Timbo - Tous droits réservés</p>
         </div>
       </footer>
     </div>
