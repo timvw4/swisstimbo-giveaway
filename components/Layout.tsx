@@ -84,17 +84,10 @@ export default function Layout({ children }: LayoutProps) {
                 className="hover:text-light-gray py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Tirage
+                Tirages
               </Link>
               <Link 
                 href="/gagnants" 
-                className="hover:text-light-gray py-2"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                À propos
-              </Link>
-              <Link 
-                href="/reglement" 
                 className="hover:text-light-gray py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
@@ -102,6 +95,13 @@ export default function Layout({ children }: LayoutProps) {
               </Link>
               <Link 
                 href="/about" 
+                className="hover:text-light-gray py-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                À propos
+              </Link>
+              <Link 
+                href="/reglement" 
                 className="hover:text-light-gray py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
