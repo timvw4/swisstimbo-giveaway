@@ -4,6 +4,8 @@ import { supabase } from '@/lib/supabaseClient'
 import Countdown from 'react-countdown'
 import { Participant } from '@/types'
 import dynamic from 'next/dynamic'
+import { CountdownRenderProps } from 'react-countdown'
+import { useRouter } from 'next/router'
 
 // Import dynamique du composant DrawWheel
 const DrawWheel = dynamic(() => import('@/components/DrawWheel'), {
@@ -15,6 +17,7 @@ export default function Tirage() {
   const [isSpinning, setIsSpinning] = useState(false)
   const [winner, setWinner] = useState<Participant | null>(null)
   const [isClient, setIsClient] = useState(false)
+  const router = useRouter()
   
   useEffect(() => {
     setIsClient(true)
@@ -41,11 +44,47 @@ export default function Tirage() {
     return nextDate
   }
 
+  const saveWinner = async (winner: Participant) => {
+    try {
+      // Sauvegarder le gagnant dans la table winners
+      const { error: winnerError } = await supabase
+        .from('winners')
+        .insert([{
+          participant_id: winner.id,
+          draw_date: new Date().toISOString(),
+          pseudo_instagram: winner.pseudoinstagram,
+          montant: 20 // Ajout du montant gagné
+        }])
+
+      if (winnerError) throw winnerError
+
+      // Attendre 5 minutes puis réinitialiser les participants
+      setTimeout(async () => {
+        const { error: deleteError } = await supabase
+          .from('participants')
+          .delete()
+          .neq('id', '0')  // Supprime tous les participants
+
+        if (deleteError) console.error('Erreur lors de la réinitialisation:', deleteError)
+        
+        // Rafraîchir la page
+        router.reload()
+      }, 5 * 60 * 1000) // 5 minutes
+
+    } catch (err) {
+      console.error('Erreur lors de la sauvegarde du gagnant:', err)
+    }
+  }
+
   const performDraw = () => {
     if (participants.length > 0) {
       setIsSpinning(true)
       const winnerIndex = Math.floor(Math.random() * participants.length)
-      setWinner(participants[winnerIndex])
+      const selectedWinner = participants[winnerIndex]
+      setWinner(selectedWinner)
+      
+      // Sauvegarder le gagnant
+      saveWinner(selectedWinner)
       
       setTimeout(() => {
         setIsSpinning(false)
@@ -91,6 +130,12 @@ export default function Tirage() {
             <Countdown 
               date={getNextDrawDate()} 
               onComplete={handleCountdownComplete}
+              renderer={(props: CountdownRenderProps) => (
+                <span>
+                  {props.days > 0 && `${props.days}j `}
+                  {props.hours}h {props.minutes}m {props.seconds}s
+                </span>
+              )}
             />
           </div>
         </div>

@@ -151,7 +151,7 @@ export default function Inscription() {
 
         <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
           <div>
-            <label className="block mb-2 text-sm md:text-base">Nom complet</label>
+            <label className="block mb-2 text-sm md:text-base">Prénom</label>
             <input
               type="text"
               required

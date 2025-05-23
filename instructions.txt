@@ -1,0 +1,73 @@
+Tu es une IA experte en développement web dans Cursor. Je suis totalement débutant et je ne veux pas toucher au code. Je veux que tu crées tout le site web automatiquement de A à Z, en générant chaque fichier, chaque composant, chaque page, sans me demander d’écrire ou de modifier du code.
+Objectif :
+Créer un site web simple pour permettre aux abonnés du compte Instagram @Jacques_reverdin de s’inscrire à un tirage au sort et peut-être gagner de l’argent. Le site doit être sobre, propre, mobile-friendly et prêt à être déployé.
+Pages du site à créer :
+
+1. / Homepage
+Afficher :
+Le nom du compte Instagram : Jacques_reverdin
+Un texte accrocheur expliquant que les abonnés peuvent gagner de l'argent gratuitement
+Le nombre de participants (tiré de la base Supabase)
+Le montant à gagner
+Le temps restant avant le prochain tirage (mardi et vendredi à 20h)
+
+2. /inscription Page d’inscription
+Formulaire avec champs :
+Nom
+Âge
+Pseudo Instagram
+Checkbox : "Je confirme être abonné à @Jacques_reverdin"
+À la soumission :
+Vérifie que le pseudo Insta n’existe pas déjà
+Enregistre les données dans Supabase
+
+3. /tirage Page du tirage au sort
+Affiche :
+Un compte à rebours avant 20h (mardi ou vendredi)
+Une roue animée qui tourne pour choisir un gagnant
+Affiche publiquement le nom du gagnant
+Le tirage doit se faire automatiquement à 20h les mardis et vendredis
+
+4. /reglement Page règlement
+Texte des règles (Les particiants doivent etre majeur. la triche n'est pas permise)
+
+5. /admin Page admin (accès protégé)
+Protégée par un mot de passe simple
+Permet de :
+Voir la liste des inscrits
+Filtrer ou exporter
+
+Fonctionnement du tirage
+L’IA doit configurer le tirage automatique à 20h tous les mardi et vendredi
+Un gagnant est sélectionné aléatoirement dans Supabase
+Le pseudo Instagram du gagnant est affiché publiquement sur la page /tirage
+
+Données enregistrées dans Supabase :
+nom : string
+age : number
+pseudoInstagram : string (unique)
+created_at : timestamp
+
+Style et design :
+Design sobre, moderne, ancien
+Typographie ancienne et bien lisible
+Couleurs inspirées du dollar américain, avec codes hex :
+Vert dollar : #00724E
+Gris clair : #D9D9D9
+Noir : #000000
+Blanc : #FFFFFF
+Intégrer le logo Instagram du compte (https://images.fineartamerica.com/images-medium-large/jacques-reverdin-swiss-surgeon-.jpg)
+Le site doit être entièrement responsive (mobile-friendly)
+
+Technologies à utiliser :
+Next.js
+Tailwind CSS
+Supabase (auth + base de données)
+Déploiement sur Vercel si possible
+
+Pas besoin de :
+Captcha
+Email
+Notifications
+
+Merci de créer tout le site automatiquement sans me demander d’écrire du code. Gère toute la logique, l’affichage et l’animation de la roue pour le tirage, la configuration de Supabase, et les redirections nécessaires.
