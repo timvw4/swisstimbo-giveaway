@@ -23,7 +23,7 @@ export default function About() {
             <h2 className="text-xl md:text-2xl font-bold mb-3 md:mb-4">Notre mission</h2>
             <div className="prose max-w-none">
               <p className="mb-4">
-              Notre but est simple : récompenser nos abonnés pour leur confiance, et leur redonner un peu de joie — sans rien leur demander en retour.<br />
+              Notre but est simple : récompenser nos abonnés pour leur confiance, et leur redonner un peu de joie, sans rien leur demander en retour.<br />
               On organise des tirages au sort ouverts à tous, 100% gratuits, équitables et transparents.
               </p>
             </div>
@@ -33,14 +33,14 @@ export default function About() {
             <h2 className="text-xl md:text-2xl font-bold mb-3 md:mb-4">Nos valeurs</h2>
             <div className="prose max-w-none">
               <p className="mb-4">
-              Ce qu’on promet :<br />
+              Ce qu'on promet :<br />
 
-                • Pas de piège, aucne d’arnaque<br />
+                • Pas de piège, aucne d'arnaque<br />
                 • Aucune donnée revendue<br />
                 • Des tirages filmés et clairs<br />
                 • Une seule motivation : partager et faire plaisir<br /><br />
 
-                SwissTimbo, c’est avant tout une aventure humaine.<br />
+                SwissTimbo, c'est avant tout une aventure humaine.<br />
                 Une idée simple, honnête, qui repose sur la confiance, la générosité… et un peu de chance.<br /><br />
 
                 Bienvenue dans la team 💛
