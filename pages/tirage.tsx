@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import Layout from '@/components/Layout'
 import { supabase } from '@/lib/supabaseClient'
-import Countdown from 'react-countdown'
+import Countdown, { CountdownRendererFn } from 'react-countdown'
 import { Participant } from '@/types'
 import dynamic from 'next/dynamic'
 import { CountdownRenderProps } from 'react-countdown'
@@ -130,7 +130,7 @@ export default function Tirage() {
             <Countdown 
               date={getNextDrawDate()} 
               onComplete={handleCountdownComplete}
-              renderer={(props: CountdownRenderProps) => (
+              renderer={props => (
                 <span>
                   {props.days > 0 && `${props.days}j `}
                   {props.hours}h {props.minutes}m {props.seconds}s
