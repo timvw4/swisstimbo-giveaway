@@ -50,11 +50,14 @@ export default function Layout({ children }: LayoutProps) {
               <Link href="/tirage" className="hover:text-light-gray">
                 Tirage
               </Link>
-              <Link href="/reglement" className="hover:text-light-gray">
-                Règlement
-              </Link>
               <Link href="/about" className="hover:text-light-gray">
                 À propos
+              </Link>
+              <Link href="/gagnants" className="hover:text-light-gray">
+                Historique
+              </Link>
+              <Link href="/reglement" className="hover:text-light-gray">
+                Règlement
               </Link>
             </div>
           </div>
@@ -84,18 +87,25 @@ export default function Layout({ children }: LayoutProps) {
                 Tirage
               </Link>
               <Link 
+                href="/gagnants" 
+                className="hover:text-light-gray py-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                À propos
+              </Link>
+              <Link 
                 href="/reglement" 
                 className="hover:text-light-gray py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Règlement
+                Historique
               </Link>
               <Link 
                 href="/about" 
                 className="hover:text-light-gray py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
-                À propos
+                Règlement
               </Link>
             </div>
           </div>

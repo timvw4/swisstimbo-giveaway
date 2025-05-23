@@ -11,7 +11,9 @@ CREATE TABLE participants (
 CREATE TABLE winners (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   participant_id UUID REFERENCES participants(id),
-  draw_date TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
+  draw_date TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()),
+  pseudo_instagram VARCHAR(255) NOT NULL,
+  montant INTEGER NOT NULL DEFAULT 20
 );
 
 -- Create index for faster lookups
