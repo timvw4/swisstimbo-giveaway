@@ -1,16 +1,22 @@
 import React, { useEffect, useState } from 'react'
 import Layout from '@/components/Layout'
 import { supabase } from '@/lib/supabaseClient'
-import Countdown, { CountdownRendererFn } from 'react-countdown'
+import Countdown from 'react-countdown'
 import { Participant } from '@/types'
 import dynamic from 'next/dynamic'
-import { CountdownRenderProps } from 'react-countdown'
 import { useRouter } from 'next/router'
 
 // Import dynamique du composant DrawWheel
 const DrawWheel = dynamic(() => import('@/components/DrawWheel'), {
   ssr: false
 })
+
+interface CountdownProps {
+  days: number
+  hours: number
+  minutes: number
+  seconds: number
+}
 
 export default function Tirage() {
   const [participants, setParticipants] = useState<Participant[]>([])
@@ -130,7 +136,7 @@ export default function Tirage() {
             <Countdown 
               date={getNextDrawDate()} 
               onComplete={handleCountdownComplete}
-              renderer={props => (
+              renderer={(props: CountdownProps) => (
                 <span>
                   {props.days > 0 && `${props.days}j `}
                   {props.hours}h {props.minutes}m {props.seconds}s
