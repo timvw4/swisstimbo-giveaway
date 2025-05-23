@@ -12,7 +12,7 @@ export default function About() {
             <h2 className="text-xl md:text-2xl font-bold mb-3 md:mb-4">Qui sommes-nous ?</h2>
             <div className="prose max-w-none">
               <p className="mb-4">
-              <br />SwissTimbo est né d’un simple constat : aujourd’hui, il est difficile de faire confiance sur internet. Trop de fausses promesses, trop d’arnaques.
+                SwissTimbo est né d’un simple constat : aujourd’hui, il est difficile de faire confiance sur internet. Trop de fausses promesses, trop d’arnaques.
                 Alors on a décidé de faire l’inverse.<br />Nous sommes un groupe d’amis, et on s’est lancé un défi un peu fou : créer la plus grande communauté francophone qui offre de l’argent et des cadeaux… gratuitement.
                 Pas de conditions cachées, pas de fausse promo, pas de ventes déguisées. Juste du vrai.
               </p>
@@ -42,7 +42,7 @@ export default function About() {
 
                 SwissTimbo, c’est avant tout une aventure humaine.<br />
                 Une idée simple, honnête, qui repose sur la confiance, la générosité… et un peu de chance.<br /><br />
-                
+
                 Bienvenue dans la team 💛
               </p>
             </div>

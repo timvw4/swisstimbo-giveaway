@@ -2,14 +2,7 @@ import React, { useEffect, useState } from 'react'
 import Layout from '@/components/Layout'
 import { supabase } from '@/lib/supabaseClient'
 import Countdown from 'react-countdown'
-
-// Définir l'interface pour les props du renderer
-interface RendererProps {
-  days: number
-  hours: number
-  minutes: number
-  seconds: number
-}
+import { CountdownRenderProps } from 'react-countdown'
 
 export default function Home() {
   const [participantCount, setParticipantCount] = useState<number>(0)
@@ -88,10 +81,10 @@ export default function Home() {
             <h3 className="text-xl md:text-2xl font-bold mb-2">
               <Countdown 
                 date={getNextDrawDate()}
-                renderer={({ days, hours, minutes, seconds }: RendererProps) => (
+                renderer={(props: CountdownRenderProps) => (
                   <span>
-                    {days > 0 && `${days}j `}
-                    {hours}h {minutes}m {seconds}s
+                    {props.days > 0 && `${props.days}j `}
+                    {props.hours}h {props.minutes}m {props.seconds}s
                   </span>
                 )}
               />

@@ -4,15 +4,8 @@ import { supabase } from '@/lib/supabaseClient'
 import Countdown from 'react-countdown'
 import { Participant } from '@/types'
 import dynamic from 'next/dynamic'
+import { CountdownRenderProps } from 'react-countdown'
 import { useRouter } from 'next/router'
-
-// Définir l'interface pour les props du renderer
-interface RendererProps {
-  days: number
-  hours: number
-  minutes: number
-  seconds: number
-}
 
 // Import dynamique du composant DrawWheel
 const DrawWheel = dynamic(() => import('@/components/DrawWheel'), {
@@ -137,10 +130,10 @@ export default function Tirage() {
             <Countdown 
               date={getNextDrawDate()} 
               onComplete={handleCountdownComplete}
-              renderer={({ days, hours, minutes, seconds }: RendererProps) => (
+              renderer={(props: CountdownRenderProps) => (
                 <span>
-                  {days > 0 && `${days}j `}
-                  {hours}h {minutes}m {seconds}s
+                  {props.days > 0 && `${props.days}j `}
+                  {props.hours}h {props.minutes}m {props.seconds}s
                 </span>
               )}
             />
