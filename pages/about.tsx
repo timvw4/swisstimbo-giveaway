@@ -35,7 +35,7 @@ export default function About() {
               <p className="mb-4">
               Ce qu’on promet :<br />
 
-                • Jamais de piège, jamais d’arnaque<br /><br />
+                • Pas de piège, aucne d’arnaque<br />
                 • Aucune donnée revendue<br />
                 • Des tirages filmés et clairs<br />
                 • Une seule motivation : partager et faire plaisir<br /><br />
