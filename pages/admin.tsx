@@ -60,12 +60,26 @@ export default function Admin() {
     a.click()
   }
 
-  const handleTestDraw = () => {
+  const handleTestDraw = async () => {
     if (participants.length > 0) {
       setIsSpinning(true)
       const winnerIndex = Math.floor(Math.random() * participants.length)
       const selectedWinner = participants[winnerIndex]
       setWinner(selectedWinner)
+
+      // Sauvegarder le gagnant dans la table winners
+      const { error: winnerError } = await supabase
+        .from('winners')
+        .insert([{
+          participant_id: selectedWinner.id,
+          draw_date: new Date().toISOString(),
+          pseudo_instagram: selectedWinner.pseudoinstagram,
+          montant: 20
+        }])
+
+      if (winnerError) {
+        console.error('Erreur lors de la sauvegarde du gagnant:', winnerError)
+      }
       
       setTimeout(() => {
         setIsSpinning(false)
@@ -149,6 +163,15 @@ export default function Admin() {
                   winner={winner}
                   onStopSpinning={() => setIsSpinning(false)}
                 />
+
+                {!isSpinning && winner && (
+                  <div className="mt-4 p-4 bg-dollar-green text-white rounded">
+                    <h3 className="text-xl font-bold mb-2">Gagnant :</h3>
+                    <p>Nom : {winner.nom}</p>
+                    <p>Pseudo : {winner.pseudoinstagram}</p>
+                    <p>Âge : {winner.age} ans</p>
+                  </div>
+                )}
               </div>
             )}
           </div>
