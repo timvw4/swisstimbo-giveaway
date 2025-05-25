@@ -12,6 +12,12 @@ declare module 'react-custom-roulette' {
     backgroundColors?: string[]
     textColors?: string[]
     onStopSpinning: () => void
+    startingOptionIndex?: number
+    radiusLineWidth?: number
+    perpendicularText?: boolean
+    textDistance?: number
+    fontSize?: number
+    spinningDuration?: number
   }
 
   export const Wheel: React.FC<WheelProps>

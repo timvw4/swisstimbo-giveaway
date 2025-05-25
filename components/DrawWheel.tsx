@@ -28,6 +28,13 @@ const DrawWheel: React.FC<DrawWheelProps> = ({
         backgroundColors={['#bc0b0b', '#D9D9D9']}
         textColors={['#FFFFFF']}
         onStopSpinning={onStopSpinning}
+        spinDuration={0.8}
+        startingOptionIndex={0}
+        radiusLineWidth={1}
+        perpendicularText={false}
+        textDistance={60}
+        fontSize={16}
+        spinningDuration={5}
       />
     </div>
   )
