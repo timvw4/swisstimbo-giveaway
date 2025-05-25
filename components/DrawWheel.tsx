@@ -33,7 +33,7 @@ const DrawWheel: React.FC<DrawWheelProps> = ({
         radiusLineWidth={1}
         perpendicularText={false}
         textDistance={60}
-        fontSize={16}
+        fontSize={14}
       />
     </div>
   )
