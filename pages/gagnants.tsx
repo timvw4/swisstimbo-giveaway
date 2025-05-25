@@ -39,6 +39,16 @@ export default function Gagnants() {
           Historique des Gagnants
         </h1>
 
+        {/* Section du dernier gagnant */}
+        <div className="bg-dollar-green text-white p-6 rounded-lg mb-8">
+          <h2 className="text-xl md:text-2xl font-bold mb-4">Dernier Gagnant</h2>
+          <div className="space-y-2">
+            <p className="text-lg">Pseudo Instagram : <span className="font-bold">@fpsilva_1227</span></p>
+            <p>Jour du tirage : <span className="font-bold">dimanche 25.05.2025</span></p>
+            <p>Montant gagné : <span className="font-bold">20 CHF</span></p>
+          </div>
+        </div>
+
         <div className="bg-white rounded-lg shadow overflow-hidden">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -47,10 +57,10 @@ export default function Gagnants() {
                   Pseudo Instagram
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Montant gagné
+                  Date du tirage
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Date du tirage
+                  Montant gagné
                 </th>
               </tr>
             </thead>
