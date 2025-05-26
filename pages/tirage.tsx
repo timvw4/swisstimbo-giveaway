@@ -5,6 +5,11 @@ import dynamic from 'next/dynamic'
 import { Participant } from '@/types'
 import { useRouter } from 'next/router'
 
+// Import dynamique de PixelGrid
+const PixelGrid = dynamic(() => import('@/components/PixelGrid'), {
+  ssr: false
+})
+
 // Définir l'interface pour les props du Countdown
 interface CountdownProps {
   date: Date | number
