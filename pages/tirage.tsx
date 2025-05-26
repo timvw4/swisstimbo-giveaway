@@ -4,14 +4,23 @@ import { supabase } from '@/lib/supabaseClient'
 import dynamic from 'next/dynamic'
 import { Participant } from '@/types'
 import { useRouter } from 'next/router'
+import type { CountdownProps as ReactCountdownProps } from 'react-countdown'
 
 // Import dynamique du composant PixelGrid
 const PixelGrid = dynamic(() => import('@/components/PixelGrid'), {
   ssr: false
 })
 
+// Définir l'interface pour les props du renderer
+interface CountdownRenderProps {
+  days: number
+  hours: number
+  minutes: number
+  seconds: number
+}
+
 // Rendre le Countdown uniquement côté client
-const Countdown = dynamic(() => import('react-countdown'), {
+const Countdown = dynamic<ReactCountdownProps>(() => import('react-countdown'), {
   ssr: false,  // Désactive le rendu côté serveur
 })
 
@@ -170,12 +179,12 @@ export default function Tirage() {
         
         <div className="mb-6 md:mb-8">
           <h2 className="text-xl md:text-2xl mb-3 md:mb-4">Prochain tirage dans :</h2>
-          {isClient && ( // N'afficher le countdown que côté client
+          {isClient && (
             <div className="text-2xl md:text-3xl font-bold">
               <Countdown 
                 date={getNextDrawDate()} 
                 onComplete={handleCountdownComplete}
-                renderer={(props: CountdownProps) => (
+                renderer={(props: CountdownRenderProps) => (
                   <span>
                     {props.days > 0 && `${props.days}j `}
                     {props.hours}h {props.minutes}m {props.seconds}s
