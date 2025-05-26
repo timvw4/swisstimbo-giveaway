@@ -6,8 +6,7 @@ import { supabase } from '@/lib/supabaseClient'
 export default function Inscription() {
   const router = useRouter()
   const [formData, setFormData] = useState({
-    nom: '',
-    age: '',
+    npa: '',
     pseudoInstagram: '',
     isSubscribed: false,
     isAdult: false
@@ -51,6 +50,12 @@ export default function Inscription() {
     return timeUntilDraw > fiveMinutesInMs
   }
 
+  const isValidSwissNPA = (npa: string) => {
+    // Les NPA suisses sont des nombres entre 1000 et 9999
+    const npaNum = parseInt(npa);
+    return !isNaN(npaNum) && npaNum >= 1000 && npaNum <= 9999;
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
@@ -64,8 +69,15 @@ export default function Inscription() {
         return
       }
 
-      if (parseInt(formData.age) < 18) {
+      if (parseInt(formData.npa) < 18) {
         setError('Vous devez être majeur pour participer')
+        setLoading(false)
+        return
+      }
+
+      // Vérifier le NPA
+      if (!isValidSwissNPA(formData.npa)) {
+        setError('Veuillez entrer un NPA suisse valide (entre 1000 et 9999)')
         setLoading(false)
         return
       }
@@ -99,8 +111,7 @@ export default function Inscription() {
       const { error: insertError } = await supabase
         .from('participants')
         .insert([{
-          nom: formData.nom.trim(),
-          age: parseInt(formData.age),
+          npa: formData.npa,
           pseudoinstagram: formattedPseudo,
           created_at: new Date().toISOString()
         }])
@@ -152,31 +163,8 @@ export default function Inscription() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
-          <div>
-            <label className="block mb-2 text-sm md:text-base">Prénom</label>
-            <input
-              type="text"
-              required
-              className="w-full p-3 border rounded text-base"
-              value={formData.nom}
-              onChange={(e) => setFormData({...formData, nom: e.target.value})}
-            />
-          </div>
-
-          <div>
-            <label className="block mb-2 text-sm md:text-base">Âge</label>
-            <input
-              type="number"
-              required
-              min="18"
-              className="w-full p-3 border rounded text-base"
-              value={formData.age}
-              onChange={(e) => setFormData({...formData, age: e.target.value})}
-            />
-          </div>
-
-          <div>
-            <label className="block mb-2 text-sm md:text-base">Pseudo Instagram</label>
+        <div>
+            <label className="block mb-2 text-sm md:text-base">Pseudo Instagram (publié en cas de victoire)</label>
             <div className="flex items-center">
               <span className="bg-gray-100 px-3 py-3 border border-r-0 rounded-l text-base">@</span>
               <input
@@ -188,6 +176,26 @@ export default function Inscription() {
                 placeholder="votre_pseudo"
               />
             </div>
+          </div>
+          
+          <div>
+            <label className="block mb-2 text-sm md:text-base">NPA (Code postal suisse)</label>
+            <input
+              type="text"
+              required
+              pattern="[1-9][0-9]{3}"
+              maxLength={4}
+              className="w-full p-3 border rounded text-base"
+              value={formData.npa}
+              onChange={(e) => {
+                const value = e.target.value.replace(/[^0-9]/g, '')
+                setFormData({...formData, npa: value})
+              }}
+              placeholder="1234"
+            />
+            <p className="text-sm text-gray-500 mt-1">
+              Entrez votre code postal suisse (ex: 1200)
+            </p>
           </div>
 
           <div>

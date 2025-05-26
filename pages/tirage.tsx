@@ -129,7 +129,7 @@ export default function Tirage() {
       try {
         const { data, error } = await supabase
           .from('participants')
-          .select('id, nom, age, pseudoinstagram, created_at')
+          .select('id, npa, pseudoinstagram, created_at')
         
         if (error) {
           console.error('Erreur lors de la récupération des participants:', error)

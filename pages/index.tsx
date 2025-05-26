@@ -106,7 +106,7 @@ export default function Home() {
 
             <div className="bg-gray-50 p-4 md:p-6 rounded-lg">
               <h3 className="text-lg md:text-xl font-bold mb-2">Qui peut participer ?</h3>
-              <p>Toute personne majeure (18 ans ou plus) abonnée à @SwissTimbo peut participer.</p>
+              <p>Toute personne majeure (18 ans ou plus), habitant en Suisse et abonnée à @SwissTimbo peut participer.</p>
             </div>
           </div>
         </div>

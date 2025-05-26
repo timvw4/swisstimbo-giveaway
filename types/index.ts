@@ -1,7 +1,6 @@
 export interface Participant {
   id: string
-  nom: string
-  age: number
+  npa: string
   pseudoinstagram: string
   created_at: string
 } 
