@@ -35,18 +35,20 @@ export default function Admin() {
   }
 
   const filteredParticipants = participants.filter(participant => 
-    participant.pseudoinstagram.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    participant.nom.toLowerCase().includes(searchTerm.toLowerCase())
+    participant.pseudoinstagram.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   const exportToCSV = () => {
-    const headers = ['Nom', 'Âge', 'Pseudo Instagram', 'Date et heure d\'inscription']
-    const csvData = filteredParticipants.map(p => 
-      `${p.nom},${p.age},${p.pseudoinstagram},${new Date(p.created_at).toLocaleString()}`
-    )
-    
-    const csv = [headers.join(','), ...csvData].join('\n')
-    const blob = new Blob([csv], { type: 'text/csv' })
+    const csvContent = [
+      ['Pseudo Instagram', 'NPA', 'Date d\'inscription'].join(','),
+      ...participants.map(participant => [
+        participant.pseudoinstagram,
+        participant.npa,
+        new Date(participant.created_at).toLocaleDateString('fr-FR')
+      ].join(','))
+    ].join('\n')
+
+    const blob = new Blob([csvContent], { type: 'text/csv' })
     const url = window.URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
@@ -142,12 +144,6 @@ export default function Admin() {
                     Pseudo
                   </th>
                   <th className="px-3 md:px-6 py-3 text-left text-xs md:text-sm font-medium text-gray-500 uppercase tracking-wider">
-                    Nom
-                  </th>
-                  <th className="px-3 md:px-6 py-3 text-left text-xs md:text-sm font-medium text-gray-500 uppercase tracking-wider">
-                    Âge
-                  </th>
-                  <th className="px-3 md:px-6 py-3 text-left text-xs md:text-sm font-medium text-gray-500 uppercase tracking-wider">
                     Date
                   </th>
                 </tr>
@@ -156,8 +152,6 @@ export default function Admin() {
                 {filteredParticipants.map((participant) => (
                   <tr key={participant.id} className="hover:bg-gray-50">
                     <td className="px-3 md:px-6 py-4 text-sm">{participant.pseudoinstagram}</td>
-                    <td className="px-3 md:px-6 py-4 text-sm">{participant.nom}</td>
-                    <td className="px-3 md:px-6 py-4 text-sm">{participant.age}</td>
                     <td className="px-3 md:px-6 py-4 text-sm">
                       {new Date(participant.created_at).toLocaleString()}
                     </td>
