@@ -47,7 +47,7 @@ export default function Home() {
             Il suffit d'être abonné pour y participer !
           </p>
           <p className="text-base md:text-lg bg-white/10 p-3 rounded">
-            Tirages tous les mercredis et dimanches à 20h
+            Tirages tous les mercredis et dimanches à 20h !
           </p>
         </div>
 
