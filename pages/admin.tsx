@@ -139,13 +139,13 @@ export default function Admin() {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-3 md:px-6 py-3 text-left text-xs md:text-sm font-medium text-gray-500 uppercase tracking-wider">
+                    Pseudo
+                  </th>
+                  <th className="px-3 md:px-6 py-3 text-left text-xs md:text-sm font-medium text-gray-500 uppercase tracking-wider">
                     Nom
                   </th>
                   <th className="px-3 md:px-6 py-3 text-left text-xs md:text-sm font-medium text-gray-500 uppercase tracking-wider">
                     Âge
-                  </th>
-                  <th className="px-3 md:px-6 py-3 text-left text-xs md:text-sm font-medium text-gray-500 uppercase tracking-wider">
-                    Pseudo
                   </th>
                   <th className="px-3 md:px-6 py-3 text-left text-xs md:text-sm font-medium text-gray-500 uppercase tracking-wider">
                     Date
@@ -155,9 +155,9 @@ export default function Admin() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredParticipants.map((participant) => (
                   <tr key={participant.id} className="hover:bg-gray-50">
+                    <td className="px-3 md:px-6 py-4 text-sm">{participant.pseudoinstagram}</td>
                     <td className="px-3 md:px-6 py-4 text-sm">{participant.nom}</td>
                     <td className="px-3 md:px-6 py-4 text-sm">{participant.age}</td>
-                    <td className="px-3 md:px-6 py-4 text-sm">{participant.pseudoinstagram}</td>
                     <td className="px-3 md:px-6 py-4 text-sm">
                       {new Date(participant.created_at).toLocaleString()}
                     </td>
