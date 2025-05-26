@@ -9,7 +9,8 @@ export default function Inscription() {
     nom: '',
     age: '',
     pseudoInstagram: '',
-    isSubscribed: false
+    isSubscribed: false,
+    isAdult: false
   })
   const [error, setError] = useState<string>('')
   const [loading, setLoading] = useState(false)
@@ -187,6 +188,19 @@ export default function Inscription() {
                 placeholder="votre_pseudo"
               />
             </div>
+          </div>
+
+          <div>
+            <label className="flex items-center text-sm md:text-base">
+              <input
+                type="checkbox"
+                required
+                className="mr-2 w-4 h-4"
+                checked={formData.isAdult}
+                onChange={(e) => setFormData({...formData, isAdult: e.target.checked})}
+              />
+              Je confirme être majeur (18 ans ou plus)
+            </label>
           </div>
 
           <div>
