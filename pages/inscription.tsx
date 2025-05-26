@@ -177,7 +177,7 @@ export default function Inscription() {
               />
             </div>
           </div>
-          
+
           <div>
             <label className="block mb-2 text-sm md:text-base">NPA (Code postal suisse)</label>
             <input
@@ -220,7 +220,7 @@ export default function Inscription() {
                 checked={formData.isSubscribed}
                 onChange={(e) => setFormData({...formData, isSubscribed: e.target.checked})}
               />
-              Je confirme être abonné à @SwissTimbo
+              Je confirme être abonné à @swiss.timbo
             </label>
           </div>
 
