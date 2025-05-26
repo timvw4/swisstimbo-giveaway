@@ -69,11 +69,16 @@ export default function Inscription() {
         return
       }
 
+      // Formater le pseudo Instagram
+      const formattedPseudo = formData.pseudoInstagram.startsWith('@') 
+        ? formData.pseudoInstagram 
+        : '@' + formData.pseudoInstagram
+
       // Vérifier si le pseudo existe déjà
       const { data: existingUser, error: checkError } = await supabase
         .from('participants')
         .select('pseudoinstagram')
-        .eq('pseudoinstagram', '@' + formData.pseudoInstagram)
+        .eq('pseudoinstagram', formattedPseudo)
         .single()
 
       if (checkError && checkError.code !== 'PGRST116') {
@@ -89,18 +94,14 @@ export default function Inscription() {
         return
       }
 
-      // Créer la date avec l'heure exacte
-      const now = new Date()
-      const isoDateTime = now.toISOString()
-
       // Insérer le nouveau participant
       const { error: insertError } = await supabase
         .from('participants')
         .insert([{
-          nom: formData.nom,
+          nom: formData.nom.trim(),
           age: parseInt(formData.age),
-          pseudoinstagram: '@' + formData.pseudoInstagram,
-          created_at: isoDateTime // Utilisation de la date et heure exacte
+          pseudoinstagram: formattedPseudo,
+          created_at: new Date().toISOString()
         }])
 
       if (insertError) {

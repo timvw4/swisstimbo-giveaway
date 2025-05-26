@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import Layout from '@/components/Layout'
 import { supabase } from '@/lib/supabaseClient'
 import { Participant } from '@/types'
+import { v4 as uuid_generate_v4 } from 'uuid'
 
 export default function Admin() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -51,6 +52,25 @@ export default function Admin() {
     a.href = url
     a.download = 'participants.csv'
     a.click()
+  }
+
+  const addPastWinner = async () => {
+    try {
+      const { error } = await supabase
+        .from('winners')
+        .insert([{
+          participant_id: uuid_generate_v4(),
+          pseudo_instagram: '@pseudo_du_gagnant',
+          draw_date: '2024-03-24T20:00:00Z',
+          montant: 20
+        }])
+
+      if (error) throw error
+      alert('Gagnant ajouté avec succès !')
+    } catch (err) {
+      console.error('Erreur lors de l\'ajout du gagnant:', err)
+      alert('Erreur lors de l\'ajout du gagnant')
+    }
   }
 
   if (!isAuthenticated) {
@@ -147,6 +167,13 @@ export default function Admin() {
             </table>
           </div>
         </div>
+
+        <button
+          onClick={addPastWinner}
+          className="bg-dollar-green text-white px-4 py-2 rounded hover:bg-opacity-90 transition"
+        >
+          Ajouter un ancien gagnant
+        </button>
       </div>
     </Layout>
   )

@@ -61,30 +61,33 @@ export default function Tirage() {
 
   const saveWinner = async (winner: Participant) => {
     try {
-      // Sauvegarder le gagnant dans la table winners
+      // Attendre la fin de l'animation
+      await new Promise(resolve => setTimeout(resolve, 10000))
+
+      // Sauvegarder le gagnant avec le bon nom de colonne
       const { error: winnerError } = await supabase
         .from('winners')
         .insert([{
           participant_id: winner.id,
+          pseudoinstagram: winner.pseudoinstagram,
           draw_date: new Date().toISOString(),
-          pseudo_instagram: winner.pseudoinstagram,
-          montant: 20 // Ajout du montant gagné
+          montant: 20
         }])
 
-      if (winnerError) throw winnerError
+      if (winnerError) {
+        console.error('Erreur lors de la sauvegarde:', winnerError)
+        throw winnerError
+      }
 
-      // Attendre 5 minutes puis réinitialiser les participants
-      setTimeout(async () => {
-        const { error: deleteError } = await supabase
-          .from('participants')
-          .delete()
-          .neq('id', '0')  // Supprime tous les participants
+      // Nettoyer la liste des participants seulement après une sauvegarde réussie
+      const { error: deleteError } = await supabase
+        .from('participants')
+        .delete()
+        .neq('id', '0')
 
-        if (deleteError) console.error('Erreur lors de la réinitialisation:', deleteError)
-        
-        // Rafraîchir la page
-        router.reload()
-      }, 5 * 60 * 1000) // 5 minutes
+      if (deleteError) {
+        console.error('Erreur lors du nettoyage des participants:', deleteError)
+      }
 
     } catch (err) {
       console.error('Erreur lors de la sauvegarde du gagnant:', err)
@@ -98,9 +101,10 @@ export default function Tirage() {
       const selectedWinner = participants[winnerIndex]
       setWinner(selectedWinner)
       
-      // Sauvegarder le gagnant
+      // Sauvegarder le gagnant après avoir défini le gagnant
       saveWinner(selectedWinner)
       
+      // L'animation se termine automatiquement après 10 secondes
       setTimeout(() => {
         setIsSpinning(false)
       }, 10000)

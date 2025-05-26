@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { Participant } from '@/types'
 
 interface PixelGridProps {
@@ -18,36 +18,45 @@ const PixelGrid: React.FC<PixelGridProps> = ({
   const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null)
   const [showWinnerAnimation, setShowWinnerAnimation] = useState(false)
 
-  // Ajuster le nombre de colonnes selon la largeur d'écran
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth < 640) { // Mobile
-        setColumns(2)
-      } else if (window.innerWidth < 1024) { // Tablet
-        setColumns(3)
-      } else { // Desktop
-        setColumns(4)
-      }
+  // Utilisation de useCallback pour mémoriser la fonction
+  const handleResize = useCallback(() => {
+    if (window.innerWidth < 640) {
+      setColumns(2)
+    } else if (window.innerWidth < 1024) {
+      setColumns(3)
+    } else {
+      setColumns(4)
     }
-
-    handleResize()
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  // Animation pendant le tirage
+  // Gestion du redimensionnement
   useEffect(() => {
-    let interval: NodeJS.Timeout
-    if (isSpinning) {
+    handleResize()
+    window.addEventListener('resize', handleResize)
+    return () => {
+      window.removeEventListener('resize', handleResize)
+    }
+  }, [handleResize])
+
+  // Animation du tirage avec cleanup approprié
+  useEffect(() => {
+    let animationInterval: NodeJS.Timeout | null = null
+
+    if (isSpinning && participants.length > 0) {
       setShowWinnerAnimation(false)
-      interval = setInterval(() => {
+      animationInterval = setInterval(() => {
         setHighlightedIndex(Math.floor(Math.random() * participants.length))
-      }, 100) // Change de pseudo toutes les 100ms
+      }, 100)
     } else if (winner) {
       setHighlightedIndex(null)
       setShowWinnerAnimation(true)
     }
-    return () => clearInterval(interval)
+
+    return () => {
+      if (animationInterval) {
+        clearInterval(animationInterval)
+      }
+    }
   }, [isSpinning, participants.length, winner])
 
   return (
