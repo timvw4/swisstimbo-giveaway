@@ -6,8 +6,8 @@ import { Participant } from '@/types'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/router'
 
-// Import dynamique du composant DrawWheel
-const DrawWheel = dynamic(() => import('@/components/DrawWheel'), {
+// Import dynamique du composant PixelGrid
+const PixelGrid = dynamic(() => import('@/components/PixelGrid'), {
   ssr: false
 })
 
@@ -33,17 +33,26 @@ export default function Tirage() {
     const now = new Date()
     const day = now.getDay() // 0 = dimanche, 3 = mercredi
     const hours = now.getHours()
-    let nextDate = new Date()
+    let nextDate = new Date(now)
     
-    if (day < 0 || (day === 0 && hours >= 20)) {
-      // Prochain mercredi
-      nextDate.setDate(nextDate.getDate() + ((3 + 7 - day) % 7))
-    } else if (day < 3 || (day === 3 && hours >= 20)) {
-      // Prochain dimanche
-      nextDate.setDate(nextDate.getDate() + ((0 + 7 - day) % 7))
+    if (day === 0) {
+      // Si on est dimanche
+      if (hours >= 20) {
+        // Après 20h -> prochain mercredi
+        nextDate.setDate(nextDate.getDate() + 3)
+      }
+    } else if (day < 3) {
+      // Entre lundi et mardi -> prochain mercredi
+      nextDate.setDate(nextDate.getDate() + (3 - day))
+    } else if (day === 3) {
+      // Si on est mercredi
+      if (hours >= 20) {
+        // Après 20h -> prochain dimanche
+        nextDate.setDate(nextDate.getDate() + 4)
+      }
     } else {
-      // Prochain dimanche
-      nextDate.setDate(nextDate.getDate() + ((0 + 7 - day) % 7))
+      // Entre jeudi et samedi -> prochain dimanche
+      nextDate.setDate(nextDate.getDate() + (7 - day))
     }
     
     nextDate.setHours(20, 0, 0, 0)
@@ -102,6 +111,15 @@ export default function Tirage() {
     performDraw()
   }
 
+  // Fonction pour tester le tirage
+  const handleTestDraw = () => {
+    if (participants.length > 0) {
+      performDraw()
+    } else {
+      alert('Aucun participant disponible pour le test')
+    }
+  }
+
   useEffect(() => {
     const fetchParticipants = async () => {
       try {
@@ -146,19 +164,28 @@ export default function Tirage() {
           </div>
         </div>
 
+        {/* Bouton de test - visible uniquement en développement */}
+        {process.env.NODE_ENV === 'development' && (
+          <button
+            onClick={handleTestDraw}
+            disabled={isSpinning}
+            className="bg-dollar-green text-white px-6 py-2 rounded mb-6 hover:bg-opacity-90 transition disabled:opacity-50"
+          >
+            {isSpinning ? 'Tirage en cours...' : 'Tester le tirage'}
+          </button>
+        )}
+
         {isClient && participants.length > 0 ? (
           <div className="mb-6 md:mb-8">
-            <div className="max-w-[280px] md:max-w-md mx-auto mb-6 md:mb-8">
-              <DrawWheel
-                participants={participants}
-                isSpinning={isSpinning}
-                winner={winner}
-                onStopSpinning={() => setIsSpinning(false)}
-              />
-            </div>
+            <PixelGrid
+              participants={participants}
+              isSpinning={isSpinning}
+              winner={winner}
+              onStopSpinning={() => setIsSpinning(false)}
+            />
             
             {!isSpinning && winner && (
-              <div className="bg-dollar-green text-white p-4 md:p-6 rounded-lg">
+              <div className="bg-dollar-green text-white p-4 md:p-6 rounded-lg mt-6">
                 <h3 className="text-xl md:text-2xl mb-2">Félicitations !</h3>
                 <p className="text-lg md:text-xl">
                   Le gagnant est : <strong>{winner.pseudoinstagram}</strong>

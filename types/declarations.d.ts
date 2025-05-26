@@ -20,5 +20,5 @@ declare module 'react-custom-roulette' {
     spinningDuration?: number
   }
 
-  export const Wheel: React.FC<WheelProps>
+  export interface Wheel: React.FC<WheelProps>
 } 

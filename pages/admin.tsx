@@ -2,11 +2,6 @@ import React, { useState } from 'react'
 import Layout from '@/components/Layout'
 import { supabase } from '@/lib/supabaseClient'
 import { Participant } from '@/types'
-import dynamic from 'next/dynamic'
-
-const DrawWheel = dynamic(() => import('@/components/DrawWheel'), {
-  ssr: false
-})
 
 export default function Admin() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -14,8 +9,6 @@ export default function Admin() {
   const [participants, setParticipants] = useState<Participant[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [error, setError] = useState('')
-  const [isSpinning, setIsSpinning] = useState(false)
-  const [winner, setWinner] = useState<Participant | null>(null)
 
   const ADMIN_PASSWORD = 'admin.tihf'
 
@@ -60,35 +53,6 @@ export default function Admin() {
     a.click()
   }
 
-  const handleTestDraw = async () => {
-    if (participants.length > 0) {
-      setIsSpinning(true)
-      const winnerIndex = Math.floor(Math.random() * participants.length)
-      const selectedWinner = participants[winnerIndex]
-      setWinner(selectedWinner)
-
-      // Sauvegarder le gagnant dans la table winners
-      const { error: winnerError } = await supabase
-        .from('winners')
-        .insert([{
-          participant_id: selectedWinner.id,
-          draw_date: new Date().toISOString(),
-          pseudo_instagram: selectedWinner.pseudoinstagram,
-          montant: 20
-        }])
-
-      if (winnerError) {
-        console.error('Erreur lors de la sauvegarde du gagnant:', winnerError)
-      }
-      
-      setTimeout(() => {
-        setIsSpinning(false)
-      }, 10000)
-    } else {
-      alert('Aucun participant disponible pour le test')
-    }
-  }
-
   if (!isAuthenticated) {
     return (
       <Layout>
@@ -126,6 +90,9 @@ export default function Admin() {
   return (
     <Layout>
       <div className="max-w-7xl mx-auto px-4">
+      <h1 className="text-2xl md:text-4xl font-bold mb-6 md:mb-8 text-center">
+          Administration
+        </h1>
         <div className="flex flex-col md:flex-row justify-between items-center mb-6 space-y-4 md:space-y-0">
           <h1 className="text-2xl md:text-3xl font-bold">Liste des participants</h1>
           
@@ -145,37 +112,6 @@ export default function Admin() {
             </button>
           </div>
         </div>
-
-        {isAuthenticated && (
-          <div className="mb-8 text-center">
-            <button
-              onClick={handleTestDraw}
-              className="bg-dollar-green text-white px-6 py-2 rounded mb-4 hover:bg-opacity-90 transition"
-            >
-              Tourner la roue
-            </button>
-
-            {participants.length > 0 && (
-              <div className="max-w-[280px] md:max-w-md mx-auto">
-                <DrawWheel
-                  participants={participants}
-                  isSpinning={isSpinning}
-                  winner={winner}
-                  onStopSpinning={() => setIsSpinning(false)}
-                />
-
-                {!isSpinning && winner && (
-                  <div className="mt-4 p-4 bg-dollar-green text-white rounded">
-                    <h3 className="text-xl font-bold mb-2">Gagnant :</h3>
-                    <p>Nom : {winner.nom}</p>
-                    <p>Pseudo : {winner.pseudoinstagram}</p>
-                    <p>Âge : {winner.age} ans</p>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
 
         <div className="overflow-x-auto bg-white rounded-lg shadow">
           <div className="inline-block min-w-full align-middle">

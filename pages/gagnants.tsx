@@ -35,10 +35,11 @@ export default function Gagnants() {
   return (
     <Layout>
       <div className="max-w-4xl mx-auto px-4">
-      <h1 className="text-2xl md:text-4xl font-bold mb-6 md:mb-8 text-center">
+        <h1 className="text-2xl md:text-4xl font-bold mb-6 md:mb-8 text-center">
           Historique des Gagnants
         </h1>
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+
+        <div className="bg-white rounded-lg shadow overflow-hidden">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
@@ -60,7 +61,7 @@ export default function Gagnants() {
                     {winner.pseudo_instagram}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(winner.draw_date).toLocaleString()}
+                    {new Date(winner.draw_date).toLocaleString('fr-FR')}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {winner.montant} CHF
@@ -69,15 +70,6 @@ export default function Gagnants() {
               ))}
             </tbody>
           </table>
-        </div>
-        {/* Section du dernier gagnant */}
-        <div className="bg-dollar-green text-white p-6 rounded-lg mb-8">
-          <h2 className="text-xl md:text-2xl font-bold mb-4">Dernier Gagnant</h2>
-          <div className="space-y-2">
-            <p className="text-lg">Pseudo Instagram : <span className="font-bold">@fpsilva_1227</span></p>
-            <p>Jour du tirage : <span className="font-bold">dimanche 25.05.2025</span></p>
-            <p>Montant gagné : <span className="font-bold">20 CHF</span></p>
-          </div>
         </div>
       </div>
     </Layout>
