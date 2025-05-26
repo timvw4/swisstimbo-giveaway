@@ -74,7 +74,7 @@ export default function Gagnants() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {winner.montant} CHF
                       </td>
-                      <td className="px-6 py-4 whitespace-normal break-words text-sm text-gray-500 min-w-[120px]">
+                      <td className="px-4 md:px-6 py-4 text-sm text-gray-500 min-w-[100px] whitespace-pre-line">
                         {formatDrawDate(winner.draw_date)}
                       </td>
                     </tr>
