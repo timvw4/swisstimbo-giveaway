@@ -56,10 +56,10 @@ export default function Gagnants() {
                   Pseudo Instagram
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Date du tirage
+                  Montant gagné
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Montant gagné
+                  Date du tirage
                 </th>
               </tr>
             </thead>
@@ -69,11 +69,11 @@ export default function Gagnants() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {winner.pseudoinstagram}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {formatDrawDate(winner.draw_date)}
-                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {winner.montant} CHF
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {formatDrawDate(winner.draw_date)}
                   </td>
                 </tr>
               ))}
