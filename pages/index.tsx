@@ -80,10 +80,36 @@ export default function Home() {
 
         <a 
           href="/inscription" 
-          className="inline-block bg-dollar-green text-white px-6 md:px-8 py-3 md:py-4 rounded-lg text-lg md:text-xl hover:bg-opacity-90 transition w-full md:w-auto"
+          className="inline-block bg-dollar-green text-white px-6 md:px-8 py-3 md:py-4 rounded-lg text-lg md:text-xl hover:bg-opacity-90 transition w-full md:w-auto mb-12"
         >
           Participer maintenant
         </a>
+
+        <div className="mt-12 text-left">
+          <h2 className="text-2xl md:text-3xl font-bold mb-6 text-center">Questions fréquentes</h2>
+          
+          <div className="space-y-6">
+            <div className="bg-gray-50 p-4 md:p-6 rounded-lg">
+              <h3 className="text-lg md:text-xl font-bold mb-2">Comment participer ?</h3>
+              <p>Il suffit d'être abonné à @SwissTimbo sur Instagram et de s'inscrire sur le site. C'est gratuit et sans engagement !</p>
+            </div>
+
+            <div className="bg-gray-50 p-4 md:p-6 rounded-lg">
+              <h3 className="text-lg md:text-xl font-bold mb-2">Quand ont lieu les tirages ?</h3>
+              <p>Les tirages ont lieu tous les mercredis et dimanches à 20h précises.</p>
+            </div>
+
+            <div className="bg-gray-50 p-4 md:p-6 rounded-lg">
+              <h3 className="text-lg md:text-xl font-bold mb-2">Comment sont versés les gains ?</h3>
+              <p>Les gains sont versés par Twint ou en cash via la Poste Suisse dans les 7 jours suivant le tirage.</p>
+            </div>
+
+            <div className="bg-gray-50 p-4 md:p-6 rounded-lg">
+              <h3 className="text-lg md:text-xl font-bold mb-2">Qui peut participer ?</h3>
+              <p>Toute personne majeure (18 ans ou plus) abonnée à @SwissTimbo peut participer.</p>
+            </div>
+          </div>
+        </div>
       </div>
     </Layout>
   )
