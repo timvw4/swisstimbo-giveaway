@@ -74,7 +74,6 @@ export default function Tirage() {
 
   const saveWinner = async (winner: Participant) => {
     try {
-      // Attend la fin de l'animation
       await new Promise(resolve => setTimeout(resolve, 10000))
 
       // Sauvegarde le gagnant dans la table winners
@@ -104,6 +103,9 @@ export default function Tirage() {
       }
 
       setIsSaved(true)
+      
+      // Mettre à jour la liste des participants
+      setParticipants([])
       
       // Redirection après 5 secondes
       setTimeout(() => {
@@ -168,7 +170,11 @@ export default function Tirage() {
       }
     }
 
-    fetchParticipants()
+    // Mettre à jour toutes les 30 secondes
+    const interval = setInterval(fetchParticipants, 30000)
+    fetchParticipants() // Première exécution
+
+    return () => clearInterval(interval) // Nettoyage à la destruction du composant
   }, [])
 
   return (
