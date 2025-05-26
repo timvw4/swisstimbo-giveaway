@@ -50,11 +50,11 @@ export default function Layout({ children }: LayoutProps) {
               <Link href="/tirage" className="hover:text-light-gray">
                 Tirage
               </Link>
+              <Link href="/gagnants" className="hover:text-light-gray">
+                Gagnants
+              </Link>
               <Link href="/about" className="hover:text-light-gray">
                 À propos
-              </Link>
-              <Link href="/gagnants" className="hover:text-light-gray">
-                Historique
               </Link>
               <Link href="/reglement" className="hover:text-light-gray">
                 Règlement
@@ -91,7 +91,7 @@ export default function Layout({ children }: LayoutProps) {
                 className="hover:text-light-gray py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Historique
+                Gagnants
               </Link>
               <Link 
                 href="/about" 

@@ -1,14 +1,18 @@
 import React, { useEffect, useState } from 'react'
 import Layout from '@/components/Layout'
 import { supabase } from '@/lib/supabaseClient'
-import Countdown from 'react-countdown'
-import { Participant } from '@/types'
 import dynamic from 'next/dynamic'
+import { Participant } from '@/types'
 import { useRouter } from 'next/router'
 
 // Import dynamique du composant PixelGrid
 const PixelGrid = dynamic(() => import('@/components/PixelGrid'), {
   ssr: false
+})
+
+// Rendre le Countdown uniquement côté client
+const Countdown = dynamic(() => import('react-countdown'), {
+  ssr: false,  // Désactive le rendu côté serveur
 })
 
 interface CountdownProps {
@@ -23,6 +27,7 @@ export default function Tirage() {
   const [isSpinning, setIsSpinning] = useState(false)
   const [winner, setWinner] = useState<Participant | null>(null)
   const [isClient, setIsClient] = useState(false)
+  const [isSaved, setIsSaved] = useState(false)
   const router = useRouter()
   
   useEffect(() => {
@@ -61,10 +66,10 @@ export default function Tirage() {
 
   const saveWinner = async (winner: Participant) => {
     try {
-      // Attendre la fin de l'animation
+      // Attend la fin de l'animation
       await new Promise(resolve => setTimeout(resolve, 10000))
 
-      // Sauvegarder le gagnant avec le bon nom de colonne
+      // Sauvegarde le gagnant dans la table winners
       const { error: winnerError } = await supabase
         .from('winners')
         .insert([{
@@ -75,37 +80,57 @@ export default function Tirage() {
         }])
 
       if (winnerError) {
-        console.error('Erreur lors de la sauvegarde:', winnerError)
+        console.error('Erreur lors de la sauvegarde du gagnant:', winnerError)
         throw winnerError
       }
 
-      // Nettoyer la liste des participants seulement après une sauvegarde réussie
+      // Nettoie la liste des participants - supprime tous les participants
       const { error: deleteError } = await supabase
         .from('participants')
         .delete()
-        .neq('id', '0')
+        .not('id', 'is', null)
 
       if (deleteError) {
-        console.error('Erreur lors du nettoyage des participants:', deleteError)
+        console.error('Erreur lors de la suppression des participants:', deleteError)
+        throw deleteError
       }
+
+      setIsSaved(true)
+      
+      // Redirection après 5 secondes
+      setTimeout(() => {
+        router.push('/gagnants')
+      }, 5000)
 
     } catch (err) {
       console.error('Erreur lors de la sauvegarde du gagnant:', err)
     }
   }
 
+  const handleTestDraw = () => {
+    console.log("Nombre de participants:", participants.length)
+    if (participants.length > 0) {
+      console.log("Début du tirage test")
+      performDraw()
+    } else {
+      console.log("Aucun participant trouvé")
+      alert('Aucun participant disponible pour le test')
+    }
+  }
+
   const performDraw = () => {
     if (participants.length > 0) {
       setIsSpinning(true)
+      console.log("Animation démarrée")
       const winnerIndex = Math.floor(Math.random() * participants.length)
       const selectedWinner = participants[winnerIndex]
+      console.log("Gagnant sélectionné:", selectedWinner)
       setWinner(selectedWinner)
       
-      // Sauvegarder le gagnant après avoir défini le gagnant
       saveWinner(selectedWinner)
       
-      // L'animation se termine automatiquement après 10 secondes
       setTimeout(() => {
+        console.log("Fin de l'animation")
         setIsSpinning(false)
       }, 10000)
     }
@@ -113,15 +138,6 @@ export default function Tirage() {
 
   const handleCountdownComplete = () => {
     performDraw()
-  }
-
-  // Fonction pour tester le tirage
-  const handleTestDraw = () => {
-    if (participants.length > 0) {
-      performDraw()
-    } else {
-      alert('Aucun participant disponible pour le test')
-    }
   }
 
   useEffect(() => {
@@ -154,18 +170,20 @@ export default function Tirage() {
         
         <div className="mb-6 md:mb-8">
           <h2 className="text-xl md:text-2xl mb-3 md:mb-4">Prochain tirage dans :</h2>
-          <div className="text-2xl md:text-3xl font-bold">
-            <Countdown 
-              date={getNextDrawDate()} 
-              onComplete={handleCountdownComplete}
-              renderer={(props: CountdownProps) => (
-                <span>
-                  {props.days > 0 && `${props.days}j `}
-                  {props.hours}h {props.minutes}m {props.seconds}s
-                </span>
-              )}
-            />
-          </div>
+          {isClient && ( // N'afficher le countdown que côté client
+            <div className="text-2xl md:text-3xl font-bold">
+              <Countdown 
+                date={getNextDrawDate()} 
+                onComplete={handleCountdownComplete}
+                renderer={(props: CountdownProps) => (
+                  <span>
+                    {props.days > 0 && `${props.days}j `}
+                    {props.hours}h {props.minutes}m {props.seconds}s
+                  </span>
+                )}
+              />
+            </div>
+          )}
         </div>
 
         {/* Bouton de test - visible uniquement en développement */}
@@ -189,11 +207,21 @@ export default function Tirage() {
             />
             
             {!isSpinning && winner && (
-              <div className="bg-dollar-green text-white p-4 md:p-6 rounded-lg mt-6">
-                <h3 className="text-xl md:text-2xl mb-2">Félicitations !</h3>
-                <p className="text-lg md:text-xl">
-                  Le gagnant est : <strong>{winner.pseudoinstagram}</strong>
-                </p>
+              <div className="space-y-4">
+                <div className="bg-dollar-green text-white p-4 md:p-6 rounded-lg mt-6">
+                  <h3 className="text-xl md:text-2xl mb-2">Félicitations !</h3>
+                  <p className="text-lg md:text-xl">
+                    Le gagnant est : <strong>{winner.pseudoinstagram}</strong>
+                  </p>
+                </div>
+                
+                {isSaved && (
+                  <div className="bg-blue-100 text-blue-800 p-4 rounded-lg">
+                    <p className="text-lg">
+                      Le tirage est terminé ! Redirection vers la page des gagnants dans quelques secondes...
+                    </p>
+                  </div>
+                )}
               </div>
             )}
           </div>
