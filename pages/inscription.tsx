@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import Layout from '@/components/Layout'
 import { supabase } from '@/lib/supabaseClient'
@@ -13,6 +13,7 @@ export default function Inscription() {
   })
   const [error, setError] = useState<string>('')
   const [loading, setLoading] = useState(false)
+  const [placesDisponibles, setPlacesDisponibles] = useState<number | null>(null)
 
   const handlePseudoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     // Supprime les espaces et le @ s'il est entré manuellement
@@ -62,6 +63,17 @@ export default function Inscription() {
     setLoading(true)
 
     try {
+      // Vérifier le nombre de participants
+      const { count } = await supabase
+        .from('participants')
+        .select('*', { count: 'exact' })
+      
+      if (count && count >= 1000) {
+        setError('Le tirage est complet pour cette session (limite: 1000 participants)')
+        setLoading(false)
+        return
+      }
+
       // Vérifier si l'inscription est encore ouverte
       if (!isRegistrationOpen()) {
         setError('Les inscriptions sont fermées 5 minutes avant le tirage')
@@ -123,6 +135,9 @@ export default function Inscription() {
         return
       }
 
+      // Mettre à jour immédiatement le compteur après une inscription réussie
+      fetchPlacesDisponibles()
+
       // Redirection en cas de succès
       router.push('/tirage')
     } catch (err) {
@@ -132,6 +147,28 @@ export default function Inscription() {
       setLoading(false)
     }
   }
+
+  // Mettre à jour le compteur toutes les 10 secondes
+  useEffect(() => {
+    const fetchPlacesDisponibles = async () => {
+      const { count } = await supabase
+        .from('participants')
+        .select('*', { count: 'exact' })
+      
+      if (count !== null) {
+        setPlacesDisponibles(1000 - count)
+      }
+    }
+
+    // Première exécution
+    fetchPlacesDisponibles()
+
+    // Mettre en place l'intervalle de mise à jour
+    const interval = setInterval(fetchPlacesDisponibles, 10000)
+
+    // Nettoyer l'intervalle quand le composant est démonté
+    return () => clearInterval(interval)
+  }, [])
 
   // Si les inscriptions sont fermées, afficher un message
   if (!isRegistrationOpen()) {
@@ -156,6 +193,15 @@ export default function Inscription() {
       <div className="max-w-md mx-auto px-4">
         <h1 className="text-2xl md:text-3xl font-bold mb-6 md:mb-8 text-center">Inscription au tirage</h1>
         
+        {/* Afficher le compteur de places */}
+        {placesDisponibles !== null && (
+          <div className="bg-gray-100 p-4 rounded-lg mb-6 text-center">
+            <p className="text-lg">
+              Places disponibles : <span className="font-bold text-dollar-green">{placesDisponibles}</span> / 1000
+            </p>
+          </div>
+        )}
+
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 text-sm md:text-base">
             {error}
