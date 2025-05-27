@@ -22,7 +22,7 @@ export default function Layout({ children }: LayoutProps) {
         <div className="container mx-auto">
           <div className="flex justify-between items-center">
             <Link href="/" className="text-xl md:text-2xl font-bold">
-              @SwissTimbo
+              @Swiss.Timbo
             </Link>
             
             {/* Bouton menu hamburger pour mobile */}
