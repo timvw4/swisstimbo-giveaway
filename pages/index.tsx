@@ -38,7 +38,7 @@ export default function Home() {
           />
         </div>
         
-        <h1 className="text-3xl md:text-4xl font-bold mb-4 md:mb-6">@SwissTimbo</h1>
+        <h1 className="text-3xl md:text-4xl font-bold mb-4 md:mb-6">Swiss Timbo</h1>
         
         <div className="bg-dollar-green text-white p-4 md:p-8 rounded-lg mb-6 md:mb-8">
           <h2 className="text-2xl md:text-3xl mb-3 md:mb-4">Gagnez {montantGain} CHF gratuitement !</h2>
@@ -93,7 +93,7 @@ export default function Home() {
           <div className="space-y-6">
             <div className="bg-gray-50 p-4 md:p-6 rounded-lg">
               <h3 className="text-lg md:text-xl font-bold mb-2">Comment participer ?</h3>
-              <p>Il suffit d'être abonné à @SwissTimbo sur Instagram et de s'inscrire sur le site. C'est gratuit et sans engagement !</p>
+              <p>Il suffit d'être abonné à @swiss.timbo sur Instagram et de s'inscrire sur le site. C'est gratuit et sans engagement !</p>
             </div>
 
             <div className="bg-gray-50 p-4 md:p-6 rounded-lg">
@@ -108,7 +108,7 @@ export default function Home() {
 
             <div className="bg-gray-50 p-4 md:p-6 rounded-lg">
               <h3 className="text-lg md:text-xl font-bold mb-2">Qui peut participer ?</h3>
-              <p>Toute personne majeure (18 ans ou plus) et abonnée à @SwissTimbo peut participer.</p>
+              <p>Toute personne majeure (18 ans ou plus) et abonnée à @swiss.timbo peut participer.</p>
             </div>
           </div>
         </div>

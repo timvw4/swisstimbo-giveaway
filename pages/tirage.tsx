@@ -76,8 +76,8 @@ export default function Tirage() {
     try {
       await new Promise(resolve => setTimeout(resolve, 10000))
 
-      // Sauvegarde le gagnant dans la table winners
-      const { error: winnerError } = await supabase
+      // 1. Sauvegarder le gagnant
+      const { data: winnerData, error: winnerError } = await supabase
         .from('winners')
         .insert([{
           participant_id: winner.id,
@@ -85,26 +85,44 @@ export default function Tirage() {
           draw_date: new Date().toISOString(),
           montant: 20
         }])
+        .select()
+        .single()
 
-      if (winnerError) {
-        console.error('Erreur lors de la sauvegarde du gagnant:', winnerError)
-        throw winnerError
+      if (winnerError) throw winnerError
+
+      // 2. Récupérer tous les participants pour l'historique
+      const { data: allParticipants, error: fetchError } = await supabase
+        .from('participants')
+        .select('*')
+
+      if (fetchError) throw fetchError
+
+      // 3. Sauvegarder tous les participants dans l'historique
+      if (allParticipants && winnerData) {
+        const historyEntries = allParticipants.map(participant => ({
+          pseudoinstagram: participant.pseudoinstagram,
+          npa: participant.npa,
+          created_at: participant.created_at,
+          draw_date: winnerData.draw_date,
+          draw_id: winnerData.id
+        }))
+
+        const { error: historyError } = await supabase
+          .from('participants_history')
+          .insert(historyEntries)
+
+        if (historyError) throw historyError
       }
 
-      // Nettoie la liste des participants - supprime tous les participants
+      // 4. Supprimer tous les participants
       const { error: deleteError } = await supabase
         .from('participants')
         .delete()
         .not('id', 'is', null)
 
-      if (deleteError) {
-        console.error('Erreur lors de la suppression des participants:', deleteError)
-        throw deleteError
-      }
+      if (deleteError) throw deleteError
 
       setIsSaved(true)
-      
-      // Mettre à jour la liste des participants
       setParticipants([])
       
       // Redirection après 5 secondes
@@ -113,7 +131,7 @@ export default function Tirage() {
       }, 5000)
 
     } catch (err) {
-      console.error('Erreur lors de la sauvegarde du gagnant:', err)
+      console.error('Erreur lors de la sauvegarde:', err)
     }
   }
 

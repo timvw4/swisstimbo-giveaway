@@ -142,7 +142,7 @@ export default function Inscription() {
         return
       }
 
-      // Insérer le nouveau participant
+      // Insérer uniquement dans la table participants
       const { error: insertError } = await supabase
         .from('participants')
         .insert([{
@@ -158,10 +158,8 @@ export default function Inscription() {
         return
       }
 
-      // Maintenant fetchPlacesDisponibles est accessible ici
+      // Mettre à jour le compteur et rediriger
       await fetchPlacesDisponibles()
-
-      // Redirection en cas de succès
       router.push('/tirage')
     } catch (err) {
       console.error('Erreur générale:', err)
