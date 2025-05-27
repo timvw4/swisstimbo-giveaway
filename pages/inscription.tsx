@@ -57,6 +57,29 @@ export default function Inscription() {
     return !isNaN(npaNum) && npaNum >= 1000 && npaNum <= 9999;
   }
 
+  // Déplacer la fonction fetchPlacesDisponibles en dehors du useEffect
+  const fetchPlacesDisponibles = async () => {
+    const { count } = await supabase
+      .from('participants')
+      .select('*', { count: 'exact' })
+    
+    if (count !== null) {
+      setPlacesDisponibles(1000 - count)
+    }
+  }
+
+  // useEffect utilise maintenant la fonction définie au-dessus
+  useEffect(() => {
+    // Première exécution
+    fetchPlacesDisponibles()
+
+    // Mettre en place l'intervalle de mise à jour
+    const interval = setInterval(fetchPlacesDisponibles, 10000)
+
+    // Nettoyer l'intervalle quand le composant est démonté
+    return () => clearInterval(interval)
+  }, [])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
@@ -135,8 +158,8 @@ export default function Inscription() {
         return
       }
 
-      // Mettre à jour immédiatement le compteur après une inscription réussie
-      fetchPlacesDisponibles()
+      // Maintenant fetchPlacesDisponibles est accessible ici
+      await fetchPlacesDisponibles()
 
       // Redirection en cas de succès
       router.push('/tirage')
@@ -147,28 +170,6 @@ export default function Inscription() {
       setLoading(false)
     }
   }
-
-  // Mettre à jour le compteur toutes les 10 secondes
-  useEffect(() => {
-    const fetchPlacesDisponibles = async () => {
-      const { count } = await supabase
-        .from('participants')
-        .select('*', { count: 'exact' })
-      
-      if (count !== null) {
-        setPlacesDisponibles(1000 - count)
-      }
-    }
-
-    // Première exécution
-    fetchPlacesDisponibles()
-
-    // Mettre en place l'intervalle de mise à jour
-    const interval = setInterval(fetchPlacesDisponibles, 10000)
-
-    // Nettoyer l'intervalle quand le composant est démonté
-    return () => clearInterval(interval)
-  }, [])
 
   // Si les inscriptions sont fermées, afficher un message
   if (!isRegistrationOpen()) {
