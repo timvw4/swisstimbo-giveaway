@@ -38,7 +38,7 @@ export default function About() {
 
                 • Pas de piège, pas d'arnaque<br />
                 • Aucune donnée revendue<br />
-                • Des tirages entièrement aléatoire<br />
+                • Des tirages honnête et en direct<br />
                 • Une seule motivation : partager et faire plaisir<br /><br />
 
                 SwissTimbo, c'est avant tout un projet qui nous fait kiffer et qui nous motive.<br />
