@@ -250,14 +250,6 @@ export default function Tirage() {
 
         {isClient && participants.length > 0 ? (
           <div className="mb-6 md:mb-8">
-            {/* Explication des couronnes */}
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4 mx-auto max-w-md">
-              <div className="flex items-center justify-center space-x-2 text-sm text-gray-700">
-                <Crown size={16} className="text-yellow-500" />
-                <span>= Ancien gagnant</span>
-              </div>
-            </div>
-
             <PixelGrid
               participants={participants}
               previousWinners={previousWinners}

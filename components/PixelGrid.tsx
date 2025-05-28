@@ -20,6 +20,7 @@ const PixelGrid: React.FC<PixelGridProps> = ({
   const [columns, setColumns] = useState(3)
   const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null)
   const [showWinnerAnimation, setShowWinnerAnimation] = useState(false)
+  const [showExplanation, setShowExplanation] = useState(false)
 
   // Utilisation de useCallback pour mémoriser la fonction
   const handleResize = useCallback(() => {
@@ -67,8 +68,33 @@ const PixelGrid: React.FC<PixelGridProps> = ({
     return previousWinners.includes(pseudoinstagram)
   }
 
+  // Fonction pour gérer le clic sur un participant avec couronne
+  const handleParticipantClick = (participant: Participant) => {
+    // Afficher l'explication seulement si le participant a une couronne
+    if (hasWonBefore(participant.pseudoinstagram)) {
+      setShowExplanation(true)
+      
+      // Faire disparaître l'explication après 2 secondes
+      setTimeout(() => {
+        setShowExplanation(false)
+      }, 2000)
+    }
+  }
+
   return (
-    <div className="max-w-4xl mx-auto p-4">
+    <div className="max-w-4xl mx-auto p-4 relative">
+      {/* Explication qui apparaît au clic - fond plus translucide */}
+      {showExplanation && (
+        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-full mb-2 z-10">
+          <div className="bg-yellow-50/80 backdrop-blur-sm border border-yellow-300/60 rounded-lg p-3 shadow-lg">
+            <div className="flex items-center justify-center space-x-2 text-sm text-gray-700">
+              <Crown size={16} className="text-yellow-500" />
+              <span>= Ancien gagnant</span>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div 
         className={`grid gap-2 md:gap-4`}
         style={{ 
@@ -88,7 +114,9 @@ const PixelGrid: React.FC<PixelGridProps> = ({
               ${showWinnerAnimation && winner?.id === participant.id 
                 ? 'animate-winner-glow' 
                 : ''}
+              ${hasWonBefore(participant.pseudoinstagram) ? 'cursor-pointer hover:bg-gray-200' : ''}
             `}
+            onClick={() => handleParticipantClick(participant)}
           >
             <div className="flex items-center justify-center space-x-1">
               {/* Afficher la couronne Lucide si le participant a déjà gagné */}
