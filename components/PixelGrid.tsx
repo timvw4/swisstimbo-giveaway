@@ -1,8 +1,10 @@
 import React, { useEffect, useState, useCallback } from 'react'
+import { Crown } from 'lucide-react'
 import { Participant } from '@/types'
 
 interface PixelGridProps {
   participants: Participant[]
+  previousWinners: string[]
   isSpinning: boolean
   winner: Participant | null
   onStopSpinning: () => void
@@ -10,6 +12,7 @@ interface PixelGridProps {
 
 const PixelGrid: React.FC<PixelGridProps> = ({
   participants,
+  previousWinners,
   isSpinning,
   winner,
   onStopSpinning
@@ -59,6 +62,11 @@ const PixelGrid: React.FC<PixelGridProps> = ({
     }
   }, [isSpinning, participants.length, winner])
 
+  // Fonction pour vérifier si un participant a déjà gagné
+  const hasWonBefore = (pseudoinstagram: string) => {
+    return previousWinners.includes(pseudoinstagram)
+  }
+
   return (
     <div className="max-w-4xl mx-auto p-4">
       <div 
@@ -82,9 +90,18 @@ const PixelGrid: React.FC<PixelGridProps> = ({
                 : ''}
             `}
           >
-            <p className="text-sm md:text-base truncate">
-              {participant.pseudoinstagram}
-            </p>
+            <div className="flex items-center justify-center space-x-1">
+              {/* Afficher la couronne Lucide si le participant a déjà gagné */}
+              {hasWonBefore(participant.pseudoinstagram) && (
+                <Crown 
+                  size={12} 
+                  className="text-yellow-500 flex-shrink-0" 
+                />
+              )}
+              <p className="text-sm md:text-base truncate">
+                {participant.pseudoinstagram}
+              </p>
+            </div>
           </div>
         ))}
       </div>

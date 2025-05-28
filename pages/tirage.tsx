@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabaseClient'
 import dynamic from 'next/dynamic'
 import { Participant } from '@/types'
 import { useRouter } from 'next/router'
+import { Crown } from 'lucide-react'
 
 // Import dynamique de PixelGrid
 const PixelGrid = dynamic(() => import('@/components/PixelGrid'), {
@@ -32,6 +33,7 @@ const Countdown = dynamic<CountdownProps>(() => import('react-countdown'), {
 
 export default function Tirage() {
   const [participants, setParticipants] = useState<Participant[]>([])
+  const [previousWinners, setPreviousWinners] = useState<string[]>([])
   const [isSpinning, setIsSpinning] = useState(false)
   const [winner, setWinner] = useState<Participant | null>(null)
   const [isClient, setIsClient] = useState(false)
@@ -169,19 +171,36 @@ export default function Tirage() {
   }
 
   useEffect(() => {
-    const fetchParticipants = async () => {
+    const fetchData = async () => {
       try {
-        const { data, error } = await supabase
+        // Récupérer les participants actuels
+        const { data: participantsData, error: participantsError } = await supabase
           .from('participants')
           .select('id, npa, pseudoinstagram, created_at')
         
-        if (error) {
-          console.error('Erreur lors de la récupération des participants:', error)
+        if (participantsError) {
+          console.error('Erreur lors de la récupération des participants:', participantsError)
           return
         }
 
-        if (data) {
-          setParticipants(data)
+        // Récupérer la liste des gagnants précédents
+        const { data: winnersData, error: winnersError } = await supabase
+          .from('winners')
+          .select('pseudoinstagram')
+        
+        if (winnersError) {
+          console.error('Erreur lors de la récupération des gagnants:', winnersError)
+          return
+        }
+
+        if (participantsData) {
+          setParticipants(participantsData)
+        }
+
+        if (winnersData) {
+          // Extraire uniquement les pseudos des gagnants précédents
+          const winnerPseudos = winnersData.map(winner => winner.pseudoinstagram)
+          setPreviousWinners(winnerPseudos)
         }
       } catch (err) {
         console.error('Erreur:', err)
@@ -189,8 +208,8 @@ export default function Tirage() {
     }
 
     // Mettre à jour toutes les 30 secondes
-    const interval = setInterval(fetchParticipants, 30000)
-    fetchParticipants() // Première exécution
+    const interval = setInterval(fetchData, 30000)
+    fetchData() // Première exécution
 
     return () => clearInterval(interval) // Nettoyage à la destruction du composant
   }, [])
@@ -231,8 +250,17 @@ export default function Tirage() {
 
         {isClient && participants.length > 0 ? (
           <div className="mb-6 md:mb-8">
+            {/* Explication des couronnes */}
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4 mx-auto max-w-md">
+              <div className="flex items-center justify-center space-x-2 text-sm text-gray-700">
+                <Crown size={16} className="text-yellow-500" />
+                <span>= Ancien gagnant</span>
+              </div>
+            </div>
+
             <PixelGrid
               participants={participants}
+              previousWinners={previousWinners}
               isSpinning={isSpinning}
               winner={winner}
               onStopSpinning={() => setIsSpinning(false)}

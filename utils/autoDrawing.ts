@@ -44,7 +44,7 @@ const performAutoDraw = async () => {
       .from('winners')
       .insert([{
         participant_id: winner.id,
-        pseudo_instagram: winner.pseudoinstagram,
+        pseudoinstagram: winner.pseudoinstagram,
         draw_date: new Date().toISOString(),
         montant: 20
       }])
