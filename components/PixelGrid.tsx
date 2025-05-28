@@ -21,6 +21,7 @@ const PixelGrid: React.FC<PixelGridProps> = ({
   const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null)
   const [showWinnerAnimation, setShowWinnerAnimation] = useState(false)
   const [showExplanation, setShowExplanation] = useState(false)
+  const [clickedParticipantId, setClickedParticipantId] = useState<string | null>(null)
 
   // Utilisation de useCallback pour mémoriser la fonction
   const handleResize = useCallback(() => {
@@ -72,29 +73,19 @@ const PixelGrid: React.FC<PixelGridProps> = ({
   const handleParticipantClick = (participant: Participant) => {
     // Afficher l'explication seulement si le participant a une couronne
     if (hasWonBefore(participant.pseudoinstagram)) {
+      setClickedParticipantId(participant.id)
       setShowExplanation(true)
       
       // Faire disparaître l'explication après 2 secondes
       setTimeout(() => {
         setShowExplanation(false)
+        setClickedParticipantId(null)
       }, 2000)
     }
   }
 
   return (
     <div className="max-w-4xl mx-auto p-4 relative">
-      {/* Explication qui apparaît au clic - fond plus translucide */}
-      {showExplanation && (
-        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-full mb-2 z-10">
-          <div className="bg-yellow-50/80 backdrop-blur-sm border border-yellow-300/60 rounded-lg p-3 shadow-lg">
-            <div className="flex items-center justify-center space-x-2 text-sm text-gray-700">
-              <Crown size={16} className="text-yellow-500" />
-              <span>= Ancien gagnant</span>
-            </div>
-          </div>
-        </div>
-      )}
-
       <div 
         className={`grid gap-2 md:gap-4`}
         style={{ 
@@ -105,7 +96,7 @@ const PixelGrid: React.FC<PixelGridProps> = ({
           <div
             key={participant.id}
             className={`
-              p-3 rounded-lg text-center transition-all duration-500
+              p-3 rounded-lg text-center transition-all duration-500 relative
               ${!isSpinning && winner?.id === participant.id 
                 ? 'bg-dollar-green text-white scale-110 animate-winner-reveal shadow-lg' 
                 : highlightedIndex === index 
@@ -118,6 +109,18 @@ const PixelGrid: React.FC<PixelGridProps> = ({
             `}
             onClick={() => handleParticipantClick(participant)}
           >
+            {/* Explication qui apparaît à côté du participant cliqué */}
+            {showExplanation && clickedParticipantId === participant.id && (
+              <div className="absolute left-full top-1/2 transform -translate-y-1/2 ml-3 z-20">
+                <div className="bg-yellow-50/80 backdrop-blur-sm border border-yellow-300/60 rounded-lg p-2 shadow-lg whitespace-nowrap">
+                  <div className="flex items-center justify-center space-x-2 text-sm text-gray-700">
+                    <Crown size={14} className="text-yellow-500" />
+                    <span>Ancien gagnant</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="flex items-center justify-center space-x-1">
               {/* Afficher la couronne Lucide si le participant a déjà gagné */}
               {hasWonBefore(participant.pseudoinstagram) && (
