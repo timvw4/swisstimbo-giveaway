@@ -124,7 +124,7 @@ const PixelGrid: React.FC<PixelGridProps> = ({
             {/* Explication à côté du participant sur desktop uniquement */}
             {showExplanation && clickedParticipantId === participant.id && (
               <div className="hidden md:block absolute left-full top-1/2 transform -translate-y-1/2 ml-3 z-20">
-                <div className="bg-yellow-50/90 backdrop-blur-sm border border-yellow-300/60 rounded-lg p-2 shadow-lg whitespace-nowrap">
+                <div className="bg-yellow-50/80 backdrop-blur-sm border border-yellow-300/60 rounded-lg p-2 shadow-lg whitespace-nowrap">
                   <div className="flex items-center justify-center space-x-2 text-sm text-gray-700">
                     <Crown size={14} className="text-yellow-500" />
                     <span>Ancien gagnant</span>
