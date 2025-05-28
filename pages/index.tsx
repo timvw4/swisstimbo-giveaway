@@ -3,6 +3,7 @@ import Layout from '@/components/Layout'
 import { supabase } from '@/lib/supabaseClient'
 import Countdown from 'react-countdown'
 import { getNextDrawDate } from '@/utils/autoDrawing'
+import Link from 'next/link'
 
 interface CountdownProps {
   days: number
@@ -47,9 +48,9 @@ export default function Home() {
             Il suffit d'être abonné pour y participer !
           </p>
           <p className="text-base md:text-lg bg-white/10 p-3 rounded">
-            <span className="underline decoration-1.2">
-            Tirages tous les mercredis et dimanches à 20h
-            </span>
+            <Link href="/tirage" className="underline decoration-1.2 hover:text-yellow-200 transition-colors cursor-pointer">
+              Tirages tous les mercredis et dimanches à 20h
+            </Link>
           </p>
         </div>
 
