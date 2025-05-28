@@ -86,9 +86,9 @@ const PixelGrid: React.FC<PixelGridProps> = ({
 
   return (
     <div className="max-w-4xl mx-auto p-4 relative">
-      {/* Explication centrée pour mobile, positionnée à côté sur desktop */}
+      {/* Explication centrée pour mobile uniquement */}
       {showExplanation && (
-        <div className="fixed md:absolute top-1/2 left-1/2 md:left-auto md:top-auto transform -translate-x-1/2 -translate-y-1/2 md:transform-none z-20">
+        <div className="block md:hidden fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20">
           <div className="bg-yellow-50/90 backdrop-blur-sm border border-yellow-300/60 rounded-lg p-3 shadow-lg whitespace-nowrap">
             <div className="flex items-center justify-center space-x-2 text-sm text-gray-700">
               <Crown size={14} className="text-yellow-500" />

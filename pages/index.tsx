@@ -47,11 +47,11 @@ export default function Home() {
             Participez à notre tirage au sort et tentez de gagner. 
             Il suffit d'être abonné pour y participer !
           </p>
-          <p className="text-base md:text-lg bg-white/10 p-3 rounded">
-            <Link href="/tirage" className="underline decoration-1.2 hover:text-yellow-200 transition-colors cursor-pointer">
+          <Link href="/tirage" className="block">
+            <p className="text-base md:text-lg bg-white/10 p-3 rounded underline decoration-1.2 cursor-pointer hover:bg-white/20 transition-colors">
               Tirages tous les mercredis et dimanches à 20h
-            </Link>
-          </p>
+            </p>
+          </Link>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8 mb-6 md:mb-8">
