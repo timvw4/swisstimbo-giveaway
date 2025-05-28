@@ -86,6 +86,18 @@ const PixelGrid: React.FC<PixelGridProps> = ({
 
   return (
     <div className="max-w-4xl mx-auto p-4 relative">
+      {/* Explication centrée pour mobile, positionnée à côté sur desktop */}
+      {showExplanation && (
+        <div className="fixed md:absolute top-1/2 left-1/2 md:left-auto md:top-auto transform -translate-x-1/2 -translate-y-1/2 md:transform-none z-20">
+          <div className="bg-yellow-50/90 backdrop-blur-sm border border-yellow-300/60 rounded-lg p-3 shadow-lg whitespace-nowrap">
+            <div className="flex items-center justify-center space-x-2 text-sm text-gray-700">
+              <Crown size={14} className="text-yellow-500" />
+              <span>Ancien gagnant</span>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div 
         className={`grid gap-2 md:gap-4`}
         style={{ 
@@ -109,10 +121,10 @@ const PixelGrid: React.FC<PixelGridProps> = ({
             `}
             onClick={() => handleParticipantClick(participant)}
           >
-            {/* Explication qui apparaît à côté du participant cliqué */}
+            {/* Explication à côté du participant sur desktop uniquement */}
             {showExplanation && clickedParticipantId === participant.id && (
-              <div className="absolute left-full top-1/2 transform -translate-y-1/2 ml-3 z-20">
-                <div className="bg-yellow-50/80 backdrop-blur-sm border border-yellow-300/60 rounded-lg p-2 shadow-lg whitespace-nowrap">
+              <div className="hidden md:block absolute left-full top-1/2 transform -translate-y-1/2 ml-3 z-20">
+                <div className="bg-yellow-50/90 backdrop-blur-sm border border-yellow-300/60 rounded-lg p-2 shadow-lg whitespace-nowrap">
                   <div className="flex items-center justify-center space-x-2 text-sm text-gray-700">
                     <Crown size={14} className="text-yellow-500" />
                     <span>Ancien gagnant</span>
