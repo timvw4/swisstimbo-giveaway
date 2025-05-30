@@ -39,8 +39,8 @@ const performAutoDraw = async () => {
     const winnerIndex = Math.floor(Math.random() * participants.length)
     const winner = participants[winnerIndex]
 
-    // Sauvegarde le gagnant
-    await supabase
+    // 1. Sauvegarder le gagnant
+    const { data: winnerData, error: winnerError } = await supabase
       .from('winners')
       .insert([{
         participant_id: winner.id,
@@ -48,12 +48,35 @@ const performAutoDraw = async () => {
         draw_date: new Date().toISOString(),
         montant: 20
       }])
+      .select()
+      .single()
 
-    // Nettoie la liste des participants
-    await supabase
+    if (winnerError) throw winnerError
+
+    // 2. Sauvegarder tous les participants dans l'historique
+    if (participants && winnerData) {
+      const historyEntries = participants.map(participant => ({
+        pseudoinstagram: participant.pseudoinstagram,
+        npa: participant.npa,
+        created_at: participant.created_at,
+        draw_date: winnerData.draw_date,
+        draw_id: winnerData.id
+      }))
+
+      const { error: historyError } = await supabase
+        .from('participants_history')
+        .insert(historyEntries)
+
+      if (historyError) throw historyError
+    }
+
+    // 3. Supprimer IMMÉDIATEMENT les participants de la base de données
+    const { error: deleteError } = await supabase
       .from('participants')
       .delete()
-      .neq('id', '0')
+      .not('id', 'is', null)
+
+    if (deleteError) throw deleteError
 
   } catch (error) {
     console.error('Erreur lors du tirage automatique:', error)

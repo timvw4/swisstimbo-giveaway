@@ -16,6 +16,8 @@ export default function About() {
                 <br /><br />
                 Alors on a décidé de faire l'inverse. Nous sommes un groupe d'amis, et on s'est lancé un défi un peu fou : créer la plus grande communauté francophone qui offre de l'argent et des cadeaux… gratuitement.
                 Pas de conditions cachées, pas de fausse promo, pas de ventes déguisées. Juste du vrai.
+                <br /><br />
+                Nous coryons vraiment en ce projet, et c'est pourquoi, pour l'instant, tout est financé de notre poche. À terme, nous espérons que des sponsors nous rejoindront pour nous permettre de vous offrir encore plus de cadeaux. 
               </p>
             </div>
           </section>

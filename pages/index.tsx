@@ -25,7 +25,13 @@ export default function Home() {
       setParticipantCount(count || 0)
     }
 
+    // Mise à jour initiale
     fetchParticipantCount()
+
+    // Mise à jour en temps réel toutes les 10 secondes
+    const interval = setInterval(fetchParticipantCount, 10000)
+
+    return () => clearInterval(interval)
   }, [])
 
   return (

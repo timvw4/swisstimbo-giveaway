@@ -31,18 +31,88 @@ const Countdown = dynamic<CountdownProps>(() => import('react-countdown'), {
   ssr: false,  // Désactive le rendu côté serveur
 })
 
+// Interface pour les données persistées dans localStorage
+interface PostDrawState {
+  frozenParticipants: Participant[]
+  winner: Participant
+  endTime: number // timestamp de fin de la période de 5 minutes
+}
+
 export default function Tirage() {
   const [participants, setParticipants] = useState<Participant[]>([])
+  const [frozenParticipants, setFrozenParticipants] = useState<Participant[]>([]) // Liste figée pour affichage
   const [previousWinners, setPreviousWinners] = useState<string[]>([])
   const [isSpinning, setIsSpinning] = useState(false)
   const [winner, setWinner] = useState<Participant | null>(null)
   const [isClient, setIsClient] = useState(false)
   const [isSaved, setIsSaved] = useState(false)
+  const [showWinnerMessage, setShowWinnerMessage] = useState(false)
+  const [isInPostDrawPeriod, setIsInPostDrawPeriod] = useState(false) // Période de 5 minutes après tirage
   const router = useRouter()
   
   useEffect(() => {
     setIsClient(true)
+    
+    // Vérifier s'il y a un état post-tirage persisté au chargement de la page
+    if (typeof window !== 'undefined') {
+      const savedState = localStorage.getItem('postDrawState')
+      if (savedState) {
+        try {
+          const state: PostDrawState = JSON.parse(savedState)
+          const now = Date.now()
+          
+          // Vérifier si la période de 5 minutes n'est pas expirée
+          if (now < state.endTime) {
+            // Restaurer l'état
+            setFrozenParticipants(state.frozenParticipants)
+            setWinner(state.winner)
+            setIsInPostDrawPeriod(true)
+            setIsSaved(true)
+            setShowWinnerMessage(true)
+            
+            // Programmer la fin de la période
+            const remainingTime = state.endTime - now
+            setTimeout(() => {
+              clearPostDrawState()
+            }, remainingTime)
+          } else {
+            // La période est expirée, nettoyer
+            localStorage.removeItem('postDrawState')
+          }
+        } catch (error) {
+          console.error('Erreur lors de la restauration de l\'état:', error)
+          localStorage.removeItem('postDrawState')
+        }
+      }
+    }
   }, [])
+
+  // Fonction pour sauvegarder l'état post-tirage
+  const savePostDrawState = (participants: Participant[], winner: Participant) => {
+    if (typeof window !== 'undefined') {
+      const endTime = Date.now() + (5 * 60 * 1000) // 5 minutes à partir de maintenant
+      const state: PostDrawState = {
+        frozenParticipants: participants,
+        winner,
+        endTime
+      }
+      localStorage.setItem('postDrawState', JSON.stringify(state))
+    }
+  }
+
+  // Fonction pour nettoyer l'état post-tirage
+  const clearPostDrawState = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('postDrawState')
+    }
+    
+    // Réinitialiser tous les états
+    setFrozenParticipants([])
+    setWinner(null)
+    setIsSaved(false)
+    setShowWinnerMessage(false)
+    setIsInPostDrawPeriod(false)
+  }
 
   const getNextDrawDate = () => {
     const now = new Date()
@@ -116,7 +186,7 @@ export default function Tirage() {
         if (historyError) throw historyError
       }
 
-      // 4. Supprimer tous les participants
+      // 4. SUPPRIMER IMMÉDIATEMENT les participants de la base de données
       const { error: deleteError } = await supabase
         .from('participants')
         .delete()
@@ -124,13 +194,24 @@ export default function Tirage() {
 
       if (deleteError) throw deleteError
 
+      // 5. Figer la liste des participants pour l'affichage pendant 5 minutes
+      setFrozenParticipants([...participants])
+      setIsInPostDrawPeriod(true)
       setIsSaved(true)
-      setParticipants([])
+      setShowWinnerMessage(true)
+      
+      // 6. Sauvegarder l'état dans localStorage
+      savePostDrawState([...participants], winner)
       
       // Redirection après 5 secondes
       setTimeout(() => {
         router.push('/gagnants')
       }, 5000)
+      
+      // 7. Après 5 minutes : réinitialiser complètement la page tirage
+      setTimeout(() => {
+        clearPostDrawState()
+      }, 5 * 60 * 1000) // 5 minutes en millisecondes
 
     } catch (err) {
       console.error('Erreur lors de la sauvegarde:', err)
@@ -193,7 +274,8 @@ export default function Tirage() {
           return
         }
 
-        if (participantsData) {
+        // Mettre à jour les participants SEULEMENT si on n'est pas en période post-tirage
+        if (participantsData && !isInPostDrawPeriod) {
           setParticipants(participantsData)
         }
 
@@ -212,7 +294,10 @@ export default function Tirage() {
     fetchData() // Première exécution
 
     return () => clearInterval(interval) // Nettoyage à la destruction du composant
-  }, [])
+  }, [isInPostDrawPeriod]) // Dépendance sur isInPostDrawPeriod
+
+  // Déterminer quels participants afficher
+  const displayedParticipants = isInPostDrawPeriod ? frozenParticipants : participants
 
   return (
     <Layout>
@@ -248,32 +333,39 @@ export default function Tirage() {
           </button>
         )}
 
-        {isClient && participants.length > 0 ? (
+        {isClient && displayedParticipants.length > 0 ? (
           <div className="mb-6 md:mb-8">
+            {/* Message de félicitations - affiché AU-DESSUS de la grille pendant 5 minutes */}
+            {!isSpinning && winner && showWinnerMessage && (
+              <div className="mb-6">
+                <div className="bg-dollar-green text-white p-4 md:p-6 rounded-lg">
+                  <h3 className="text-xl md:text-2xl mb-2">Félicitations !</h3>
+                  <p className="text-lg md:text-xl">
+                    Le gagnant est : <strong>{winner.pseudoinstagram}</strong>
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Grille des participants (figée ou en temps réel selon la période) */}
             <PixelGrid
-              participants={participants}
+              participants={displayedParticipants}
               previousWinners={previousWinners}
               isSpinning={isSpinning}
               winner={winner}
               onStopSpinning={() => setIsSpinning(false)}
             />
             
-            {!isSpinning && winner && (
-              <div className="space-y-4">
-                <div className="bg-dollar-green text-white p-4 md:p-6 rounded-lg mt-6">
-                  <h3 className="text-xl md:text-2xl mb-2">Félicitations !</h3>
-                  <p className="text-lg md:text-xl">
-                    Le gagnant est : <strong>{winner.pseudoinstagram}</strong>
+            {/* Message de réinitialisation - affiché EN DESSOUS de la grille pendant 5 minutes */}
+            {!isSpinning && winner && isSaved && (
+              <div className="mt-6">
+                <div className="bg-blue-100 text-blue-800 p-4 rounded-lg">
+                  <p className="text-lg">
+                    Le tirage est terminé ! Les participants seront réinitialisés dans 5 minutes.
+                    <br />
+                    Redirection vers la page des gagnants dans quelques secondes...
                   </p>
                 </div>
-                
-                {isSaved && (
-                  <div className="bg-blue-100 text-blue-800 p-4 rounded-lg">
-                    <p className="text-lg">
-                      Le tirage est terminé ! Redirection vers la page des gagnants dans quelques secondes...
-                    </p>
-                  </div>
-                )}
               </div>
             )}
           </div>
