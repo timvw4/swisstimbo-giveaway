@@ -14,7 +14,7 @@ export default function Layout({
   description = "Participez gratuitement et gagnez 20 CHF ! Tirages tous les mercredis et dimanches à 20h. Inscription simple et rapide."
 }: LayoutProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const siteUrl = "https://swiss-timbo-123xyz.vercel.app"
+  const siteUrl = "https://swisstimbo-giveaway.vercel.app"
   const imageUrl = `${siteUrl}/images/swisstimbo.jpg`
 
   return (
@@ -25,28 +25,35 @@ export default function Layout({
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
         
-        {/* Open Graph / Facebook */}
+        {/* Open Graph / Facebook - Plus explicite */}
         <meta property="og:type" content="website" />
         <meta property="og:url" content={siteUrl} />
         <meta property="og:title" content={title} />
         <meta property="og:description" content={description} />
         <meta property="og:image" content={imageUrl} />
+        <meta property="og:image:secure_url" content={imageUrl} />
+        <meta property="og:image:type" content="image/jpeg" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content="Swiss Timbo - Logo du tirage au sort gratuit" />
         <meta property="og:site_name" content="Swiss Timbo" />
         <meta property="og:locale" content="fr_CH" />
         
-        {/* Twitter */}
-        <meta property="twitter:card" content="summary_large_image" />
-        <meta property="twitter:url" content={siteUrl} />
-        <meta property="twitter:title" content={title} />
-        <meta property="twitter:description" content={description} />
-        <meta property="twitter:image" content={imageUrl} />
+        {/* Twitter - Plus explicite */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:site" content="@swiss.timbo" />
+        <meta name="twitter:creator" content="@swiss.timbo" />
+        <meta name="twitter:url" content={siteUrl} />
+        <meta name="twitter:title" content={title} />
+        <meta name="twitter:description" content={description} />
+        <meta name="twitter:image" content={imageUrl} />
+        <meta name="twitter:image:alt" content="Swiss Timbo - Logo du tirage au sort gratuit" />
         
-        {/* Instagram spécifique */}
+        {/* Métadonnées supplémentaires pour Instagram */}
         <meta name="author" content="Swiss Timbo" />
         <meta name="robots" content="index, follow" />
         <meta name="theme-color" content="#22c55e" />
+        <link rel="canonical" href={siteUrl} />
         
         {/* Sécurité */}
         <meta httpEquiv="Content-Security-Policy" content="upgrade-insecure-requests" />
