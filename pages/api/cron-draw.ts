@@ -84,7 +84,9 @@ const performAutoDraw = async () => {
 
   } catch (error) {
     console.error('[CRON] Erreur lors du tirage:', error)
-    return { success: false, error: error.message }
+    // Correction TypeScript : vérifier le type de l'erreur
+    const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue'
+    return { success: false, error: errorMessage }
   }
 }
 
