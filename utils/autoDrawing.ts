@@ -53,21 +53,49 @@ const performAutoDraw = async () => {
 
     if (winnerError) throw winnerError
 
-    // 2. Sauvegarder tous les participants dans l'historique
+    // 2. Vérifier quels participants ne sont PAS encore dans l'historique
     if (participants && winnerData) {
-      const historyEntries = participants.map(participant => ({
-        pseudoinstagram: participant.pseudoinstagram,
-        npa: participant.npa,
-        created_at: participant.created_at,
-        draw_date: winnerData.draw_date,
-        draw_id: winnerData.id
-      }))
-
-      const { error: historyError } = await supabase
+      // Récupérer tous les pseudos déjà présents dans l'historique
+      const { data: existingHistory, error: historyFetchError } = await supabase
         .from('participants_history')
-        .insert(historyEntries)
+        .select('pseudoinstagram')
 
-      if (historyError) throw historyError
+      if (historyFetchError) throw historyFetchError
+
+      // Créer un Set des pseudos déjà présents pour une recherche rapide
+      const existingPseudos = new Set(
+        existingHistory?.map(entry => entry.pseudoinstagram) || []
+      )
+
+      // Filtrer pour ne garder que les nouveaux participants
+      const newParticipants = participants.filter(
+        participant => !existingPseudos.has(participant.pseudoinstagram)
+      )
+
+      console.log(`[AUTO DRAW] Participants total: ${participants.length}`)
+      console.log(`[AUTO DRAW] Participants déjà dans l'historique: ${existingPseudos.size}`)
+      console.log(`[AUTO DRAW] Nouveaux participants à ajouter: ${newParticipants.length}`)
+
+      // Sauvegarder SEULEMENT les nouveaux participants dans l'historique
+      if (newParticipants.length > 0) {
+        const historyEntries = newParticipants.map(participant => ({
+          pseudoinstagram: participant.pseudoinstagram,
+          npa: participant.npa,
+          created_at: participant.created_at,
+          draw_date: winnerData.draw_date,
+          draw_id: winnerData.id
+        }))
+
+        const { error: historyError } = await supabase
+          .from('participants_history')
+          .insert(historyEntries)
+
+        if (historyError) throw historyError
+        
+        console.log(`[AUTO DRAW] ${newParticipants.length} nouveaux participants ajoutés à l'historique`)
+      } else {
+        console.log('[AUTO DRAW] Aucun nouveau participant à ajouter (tous déjà présents dans l\'historique)')
+      }
     }
 
     // 3. Supprimer IMMÉDIATEMENT les participants de la base de données
