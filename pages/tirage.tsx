@@ -257,21 +257,38 @@ export default function Tirage() {
     }
   }
 
-  const performDraw = () => {
+  const performDraw = async () => {
     if (participants.length > 0) {
       setIsSpinning(true)
-      console.log("Animation démarrée")
-      const winnerIndex = Math.floor(Math.random() * participants.length)
-      const selectedWinner = participants[winnerIndex]
-      console.log("Gagnant sélectionné:", selectedWinner)
-      setWinner(selectedWinner)
       
-      saveWinner(selectedWinner)
-      
-      setTimeout(() => {
-        console.log("Fin de l'animation")
+      try {
+        // Appeler l'API pour le tirage centralisé
+        const response = await fetch('/api/perform-draw', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        })
+        
+        const data = await response.json()
+        
+        if (data.success) {
+          setWinner(data.winner)
+          // Pas de sauvegarde côté client, tout est fait côté serveur
+          
+          setTimeout(() => {
+            setIsSpinning(false)
+            setShowWinnerMessage(true)
+            setIsSaved(true)
+            
+            // Redirection après 5 secondes
+            setTimeout(() => {
+              router.push('/gagnants')
+            }, 5000)
+          }, 10000)
+        }
+      } catch (error) {
+        console.error('Erreur lors du tirage:', error)
         setIsSpinning(false)
-      }, 10000)
+      }
     }
   }
 
