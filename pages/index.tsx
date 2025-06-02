@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import Layout from '@/components/Layout'
 import { supabase } from '@/lib/supabaseClient'
 import Countdown from 'react-countdown'
-import { getNextDrawDate } from '@/utils/autoDrawing'
+import { getNextDrawDate } from '@/utils/dateUtils'
 import Link from 'next/link'
 
 interface CountdownProps {
