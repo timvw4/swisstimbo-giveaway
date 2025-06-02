@@ -23,6 +23,8 @@ export default function Admin() {
   const [historySearchTerm, setHistorySearchTerm] = useState('')
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
+  const ITEMS_PER_PAGE = 50
 
   const ADMIN_PASSWORD = 'admin.tihf'
 
@@ -47,11 +49,15 @@ export default function Admin() {
     }
   }
 
-  const fetchHistory = async () => {
-    const { data, error } = await supabase
+  const fetchHistory = async (page = 1) => {
+    const from = (page - 1) * ITEMS_PER_PAGE
+    const to = from + ITEMS_PER_PAGE - 1
+
+    const { data, error, count } = await supabase
       .from('participants_history')
-      .select('*')
+      .select('*', { count: 'exact' })
       .order('draw_date', { ascending: false })
+      .range(from, to)
 
     if (error) {
       console.error('Erreur lors de la récupération de l\'historique:', error)

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import Layout from '@/components/Layout'
 import { supabase } from '@/lib/supabaseClient'
+import { getNextDrawDate, isRegistrationOpen } from '@/utils/dateUtils'
 
 export default function Inscription() {
   const router = useRouter()
@@ -19,36 +20,6 @@ export default function Inscription() {
     // Supprime les espaces et le @ s'il est entré manuellement
     const value = e.target.value.replace(/\s+/g, '').replace('@', '')
     setFormData({...formData, pseudoInstagram: value})
-  }
-
-  const getNextDrawDate = () => {
-    const now = new Date()
-    const day = now.getDay() // 0 = dimanche, 3 = mercredi
-    const hours = now.getHours()
-    let nextDate = new Date()
-    
-    if (day < 0 || (day === 0 && hours >= 20)) {
-      // Prochain mercredi
-      nextDate.setDate(nextDate.getDate() + ((3 + 7 - day) % 7))
-    } else if (day < 3 || (day === 3 && hours >= 20)) {
-      // Prochain dimanche
-      nextDate.setDate(nextDate.getDate() + ((0 + 7 - day) % 7))
-    } else {
-      // Prochain dimanche
-      nextDate.setDate(nextDate.getDate() + ((0 + 7 - day) % 7))
-    }
-    
-    nextDate.setHours(20, 0, 0, 0)
-    return nextDate
-  }
-
-  const isRegistrationOpen = () => {
-    const now = new Date()
-    const drawDate = getNextDrawDate()
-    const timeUntilDraw = drawDate.getTime() - now.getTime()
-    const fiveMinutesInMs = 5 * 60 * 1000
-
-    return timeUntilDraw > fiveMinutesInMs
   }
 
   const isValidSwissNPA = (npa: string) => {
@@ -163,7 +134,13 @@ export default function Inscription() {
       router.push('/tirage')
     } catch (err) {
       console.error('Erreur générale:', err)
-      setError('Une erreur est survenue lors de l\'inscription')
+      
+      // Gestion d'erreur plus spécifique
+      if (err instanceof Error) {
+        setError(`Une erreur est survenue: ${err.message}`)
+      } else {
+        setError('Une erreur inattendue est survenue lors de l\'inscription')
+      }
     } finally {
       setLoading(false)
     }

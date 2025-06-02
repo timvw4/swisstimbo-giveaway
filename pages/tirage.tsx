@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic'
 import { Participant } from '@/types'
 import { useRouter } from 'next/router'
 import { Crown } from 'lucide-react'
+import { getNextDrawDate } from '@/utils/dateUtils'
 
 // Import dynamique de PixelGrid
 const PixelGrid = dynamic(() => import('@/components/PixelGrid'), {
@@ -112,36 +113,6 @@ export default function Tirage() {
     setIsSaved(false)
     setShowWinnerMessage(false)
     setIsInPostDrawPeriod(false)
-  }
-
-  const getNextDrawDate = () => {
-    const now = new Date()
-    const day = now.getDay() // 0 = dimanche, 3 = mercredi
-    const hours = now.getHours()
-    let nextDate = new Date(now)
-    
-    if (day === 0) {
-      // Si on est dimanche
-      if (hours >= 20) {
-        // Après 20h -> prochain mercredi
-        nextDate.setDate(nextDate.getDate() + 3)
-      }
-    } else if (day < 3) {
-      // Entre lundi et mardi -> prochain mercredi
-      nextDate.setDate(nextDate.getDate() + (3 - day))
-    } else if (day === 3) {
-      // Si on est mercredi
-      if (hours >= 20) {
-        // Après 20h -> prochain dimanche
-        nextDate.setDate(nextDate.getDate() + 4)
-      }
-    } else {
-      // Entre jeudi et samedi -> prochain dimanche
-      nextDate.setDate(nextDate.getDate() + (7 - day))
-    }
-    
-    nextDate.setHours(20, 0, 0, 0)
-    return nextDate
   }
 
   const saveWinner = async (winner: Participant) => {

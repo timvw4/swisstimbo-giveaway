@@ -14,7 +14,7 @@ export default function Layout({
   description = "Participez gratuitement et gagnez 20 CHF ! Tirages tous les mercredis et dimanches à 20h. Inscription simple et rapide."
 }: LayoutProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const siteUrl = "https://swisstimbo-giveaway.vercel.app"
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://swisstimbo-giveaway.vercel.app"
   const imageUrl = `${siteUrl}/images/swisstimbo.jpg`
 
   return (
