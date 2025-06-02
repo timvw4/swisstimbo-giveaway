@@ -1,6 +1,6 @@
 import React from 'react'
 import Countdown from 'react-countdown'
-import { getNextDrawDate } from '@/utils/autoDrawing'
+import { getNextDrawDate } from '@/utils/dateUtils'
 
 interface CountdownRendererProps {
   days: number
