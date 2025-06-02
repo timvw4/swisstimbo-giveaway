@@ -23,8 +23,6 @@ export default function Admin() {
   const [historySearchTerm, setHistorySearchTerm] = useState('')
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
-  const [maintenanceMode, setMaintenanceMode] = useState(false)
-  const [loadingMaintenance, setLoadingMaintenance] = useState(false)
 
   const ADMIN_PASSWORD = 'admin.tihf'
 
@@ -70,20 +68,6 @@ export default function Admin() {
       fetchHistory()
     }
   }, [isAuthenticated])
-
-  useEffect(() => {
-    const fetchMaintenanceStatus = async () => {
-      try {
-        const response = await fetch('/api/maintenance')
-        const data = await response.json()
-        setMaintenanceMode(data.maintenanceMode)
-      } catch (error) {
-        console.error('Erreur récupération maintenance:', error)
-      }
-    }
-
-    fetchMaintenanceStatus()
-  }, [])
 
   const filteredParticipants = participants.filter(participant => 
     participant.pseudoinstagram.toLowerCase().includes(searchTerm.toLowerCase())
@@ -135,28 +119,6 @@ export default function Admin() {
     a.href = url
     a.download = 'historique_participants.csv'
     a.click()
-  }
-
-  const toggleMaintenance = async () => {
-    setLoadingMaintenance(true)
-    try {
-      const response = await fetch('/api/maintenance', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ enabled: !maintenanceMode })
-      })
-
-      const data = await response.json()
-      if (data.success) {
-        setMaintenanceMode(data.maintenanceMode)
-        alert(`Mode maintenance ${data.maintenanceMode ? 'activé' : 'désactivé'}`)
-      }
-    } catch (error) {
-      console.error('Erreur toggle maintenance:', error)
-      alert('Erreur lors de la modification')
-    } finally {
-      setLoadingMaintenance(false)
-    }
   }
 
   if (!isAuthenticated) {
@@ -326,35 +288,6 @@ export default function Admin() {
             </div>
           </>
         )}
-
-        <div className="bg-white p-6 rounded-lg shadow mb-6">
-          <h2 className="text-xl font-bold mb-4">Mode Maintenance</h2>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-600">
-                {maintenanceMode ? 
-                  'Le site est actuellement en maintenance' : 
-                  'Le site est accessible normalement'
-                }
-              </p>
-              <p className="text-sm text-gray-500 mt-1">
-                En mode maintenance, seule la page admin reste accessible
-              </p>
-            </div>
-            <button
-              onClick={toggleMaintenance}
-              disabled={loadingMaintenance}
-              className={`px-4 py-2 rounded font-medium ${
-                maintenanceMode 
-                  ? 'bg-red-500 hover:bg-red-600 text-white' 
-                  : 'bg-green-500 hover:bg-green-600 text-white'
-              } disabled:opacity-50`}
-            >
-              {loadingMaintenance ? 'Chargement...' : 
-               maintenanceMode ? 'Désactiver' : 'Activer'}
-            </button>
-          </div>
-        </div>
       </div>
     </Layout>
   )
