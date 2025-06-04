@@ -14,8 +14,17 @@ export default function Layout({
   description = "Participez gratuitement et gagnez 20 CHF ! Tirages tous les mercredis et dimanches à 20h. Inscription simple et rapide."
 }: LayoutProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://swisstimbo-giveaway.vercel.app"
-  const imageUrl = `${siteUrl}/images/swisstimbo.jpg`
+  
+  // 🔧 CORRECTION : Gérer les URLs selon l'environnement
+  const isDevelopment = process.env.NODE_ENV === 'development'
+  const siteUrl = isDevelopment 
+    ? 'http://localhost:3000' 
+    : (process.env.NEXT_PUBLIC_SITE_URL || "https://swisstimbo-giveaway.vercel.app")
+  
+  // 🔧 CORRECTION : En développement, utiliser un chemin relatif pour l'image
+  const imageUrl = isDevelopment 
+    ? '/images/swisstimbo.jpg' 
+    : `${siteUrl}/images/swisstimbo.jpg`
 
   return (
     <>
@@ -25,7 +34,7 @@ export default function Layout({
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
         
-        {/* Open Graph / Facebook - Plus explicite */}
+        {/* Open Graph / Facebook */}
         <meta property="og:type" content="website" />
         <meta property="og:url" content={siteUrl} />
         <meta property="og:title" content={title} />
@@ -39,7 +48,7 @@ export default function Layout({
         <meta property="og:site_name" content="Swiss Timbo" />
         <meta property="og:locale" content="fr_CH" />
         
-        {/* Twitter - Plus explicite */}
+        {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:site" content="@swiss.timbo" />
         <meta name="twitter:creator" content="@swiss.timbo" />
@@ -49,14 +58,16 @@ export default function Layout({
         <meta name="twitter:image" content={imageUrl} />
         <meta name="twitter:image:alt" content="Swiss Timbo - Logo du tirage au sort gratuit" />
         
-        {/* Métadonnées supplémentaires pour Instagram */}
+        {/* Métadonnées supplémentaires */}
         <meta name="author" content="Swiss Timbo" />
         <meta name="robots" content="index, follow" />
-        <meta name="theme-color" content="#22c55e" />
+        <meta name="theme-color" content="#bc0b0b" />
         <link rel="canonical" href={siteUrl} />
         
-        {/* Sécurité */}
-        <meta httpEquiv="Content-Security-Policy" content="upgrade-insecure-requests" />
+        {/* 🔧 CORRECTION : Supprimer la CSP en développement */}
+        {!isDevelopment && (
+          <meta httpEquiv="Content-Security-Policy" content="upgrade-insecure-requests" />
+        )}
       </Head>
       
       <div className="min-h-screen bg-white font-old-style">

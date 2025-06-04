@@ -54,31 +54,35 @@ const performAutoDraw = async () => {
 
     if (winnerError) throw winnerError
 
-    // 2. Vérifier quels participants ne sont PAS encore dans l'historique
+    // 2. Amélioration : Vérifier les doublons de manière plus précise
     if (participants && winnerData) {
-      // Récupérer tous les pseudos déjà présents dans l'historique
+      // Récupérer TOUS les participants déjà présents dans l'historique avec leurs détails
       const { data: existingHistory, error: historyFetchError } = await supabase
         .from('participants_history')
-        .select('pseudoinstagram')
+        .select('pseudoinstagram, npa, created_at')
 
       if (historyFetchError) throw historyFetchError
 
-      // Créer un Set des pseudos déjà présents pour une recherche rapide
-      const existingPseudos = new Set(
-        existingHistory?.map(entry => entry.pseudoinstagram) || []
+      // Créer une clé unique pour chaque participant (pseudo + npa + date d'inscription)
+      const existingKeys = new Set(
+        existingHistory?.map(entry => 
+          `${entry.pseudoinstagram}_${entry.npa}_${entry.created_at}`
+        ) || []
       )
 
-      // Filtrer pour ne garder que les nouveaux participants
-      const newParticipants = participants.filter(
-        participant => !existingPseudos.has(participant.pseudoinstagram)
-      )
+      // Filtrer pour ne garder que les participants vraiment nouveaux
+      const newParticipants = participants.filter(participant => {
+        const participantKey = `${participant.pseudoinstagram}_${participant.npa}_${participant.created_at}`
+        return !existingKeys.has(participantKey)
+      })
 
       console.log(`[AUTO DRAW] Participants total: ${participants.length}`)
-      console.log(`[AUTO DRAW] Participants déjà dans l'historique: ${existingPseudos.size}`)
+      console.log(`[AUTO DRAW] Participants déjà dans l'historique: ${existingKeys.size}`)
       console.log(`[AUTO DRAW] Nouveaux participants à ajouter: ${newParticipants.length}`)
 
       // Sauvegarder SEULEMENT les nouveaux participants dans l'historique
       if (newParticipants.length > 0) {
+        // Utiliser upsert pour éviter les conflits en cas de concurrence
         const historyEntries = newParticipants.map(participant => ({
           pseudoinstagram: participant.pseudoinstagram,
           npa: participant.npa,
@@ -87,13 +91,20 @@ const performAutoDraw = async () => {
           draw_id: winnerData.id
         }))
 
+        // Insérer avec gestion des conflits
         const { error: historyError } = await supabase
           .from('participants_history')
-          .insert(historyEntries)
+          .upsert(historyEntries, { 
+            onConflict: 'pseudoinstagram,created_at',
+            ignoreDuplicates: true 
+          })
 
-        if (historyError) throw historyError
-        
-        console.log(`[AUTO DRAW] ${newParticipants.length} nouveaux participants ajoutés à l'historique`)
+        if (historyError) {
+          console.error('Erreur lors de l\'ajout à l\'historique:', historyError)
+          // Ne pas arrêter le processus si l'historique échoue
+        } else {
+          console.log(`[AUTO DRAW] ${newParticipants.length} nouveaux participants ajoutés à l'historique`)
+        }
       } else {
         console.log('[AUTO DRAW] Aucun nouveau participant à ajouter (tous déjà présents dans l\'historique)')
       }
