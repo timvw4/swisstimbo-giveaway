@@ -243,7 +243,9 @@ export default function Tirage() {
         
         if (data.success) {
           setWinner(data.winner)
-          // Pas de sauvegarde côté client, tout est fait côté serveur
+          
+          // 🔧 NOUVEAU : Mettre à jour immédiatement la liste des anciens gagnants
+          setPreviousWinners(prev => [...prev, data.winner.pseudoinstagram])
           
           setTimeout(() => {
             setIsSpinning(false)
