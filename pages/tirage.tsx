@@ -315,6 +315,22 @@ export default function Tirage() {
   // Déterminer quels participants afficher
   const displayedParticipants = isInPostDrawPeriod ? frozenParticipants : participants
 
+  // 🏆 NOUVEAU: Fonction pour récupérer la liste des anciens gagnants
+  const fetchPreviousWinners = async () => {
+    const { data } = await supabase
+      .from('winners')
+      .select('pseudoinstagram')
+    
+    if (data) {
+      setPreviousWinners(data.map(winner => winner.pseudoinstagram))
+    }
+  }
+
+  // 🏆 NOUVEAU: Composant simple pour la couronne
+  const CrownIcon = () => (
+    <span className="text-yellow-500 ml-1" title="Ancien gagnant">👑</span>
+  )
+
   return (
     <Layout>
       <div className="max-w-4xl mx-auto text-center px-4">
@@ -387,6 +403,23 @@ export default function Tirage() {
           </div>
         ) : (
           <p className="text-lg md:text-xl">Aucun participant pour le moment</p>
+        )}
+
+        {participants.length > 0 && (
+          <div className="bg-white p-6 rounded-lg shadow mb-6">
+            <h3 className="text-xl font-bold mb-4">Participants inscrits ({participants.length}/1000)</h3>
+            <div className="max-h-40 overflow-y-auto">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 text-sm">
+                {participants.map((participant) => (
+                  <div key={participant.id} className="flex items-center">
+                    <span>{participant.pseudoinstagram}</span>
+                    {/* 🏆 NOUVEAU: Afficher la couronne si c'est un ancien gagnant */}
+                    {previousWinners.includes(participant.pseudoinstagram) && <CrownIcon />}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </Layout>
