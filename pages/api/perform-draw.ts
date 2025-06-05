@@ -52,20 +52,29 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (winnerError) throw winnerError
 
-    // Éviter les doublons dans l'historique
+    // 🔧 AMÉLIORATION : Éviter les doublons de manière plus précise
     const { data: existingHistory } = await supabase
       .from('participants_history')
-      .select('pseudoinstagram')
+      .select('pseudoinstagram, npa, created_at')
 
-    const existingPseudos = new Set(
-      existingHistory?.map(entry => entry.pseudoinstagram) || []
+    // Créer une clé unique pour chaque participant (pseudo + npa + date inscription)
+    const existingKeys = new Set(
+      existingHistory?.map(entry => 
+        `${entry.pseudoinstagram}_${entry.npa}_${entry.created_at}`
+      ) || []
     )
 
-    const newParticipants = participants.filter(
-      participant => !existingPseudos.has(participant.pseudoinstagram)
-    )
+    // Filtrer pour ne garder que les participants vraiment nouveaux
+    const newParticipants = participants.filter(participant => {
+      const participantKey = `${participant.pseudoinstagram}_${participant.npa}_${participant.created_at}`
+      return !existingKeys.has(participantKey)
+    })
 
-    // Sauvegarder les nouveaux participants
+    console.log(`[PERFORM DRAW] Participants total: ${participants.length}`)
+    console.log(`[PERFORM DRAW] Participants déjà dans l'historique: ${existingKeys.size}`)
+    console.log(`[PERFORM DRAW] Nouveaux participants à ajouter: ${newParticipants.length}`)
+
+    // Sauvegarder SEULEMENT les nouveaux participants
     if (newParticipants.length > 0) {
       const historyEntries = newParticipants.map(participant => ({
         pseudoinstagram: participant.pseudoinstagram,
@@ -75,7 +84,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         draw_id: winnerData.id
       }))
 
-      await supabase.from('participants_history').insert(historyEntries)
+      // 🔧 AMÉLIORATION : Utiliser upsert avec gestion des conflits
+      const { error: historyError } = await supabase
+        .from('participants_history')
+        .upsert(historyEntries, { 
+          onConflict: 'pseudoinstagram,created_at',
+          ignoreDuplicates: true 
+        })
+
+      if (historyError) {
+        console.error('Erreur lors de l\'ajout à l\'historique:', historyError)
+        // Ne pas arrêter le processus si l'historique échoue
+      } else {
+        console.log(`[PERFORM DRAW] ${newParticipants.length} nouveaux participants ajoutés à l'historique`)
+      }
+    } else {
+      console.log('[PERFORM DRAW] Aucun nouveau participant à ajouter (tous déjà présents dans l\'historique)')
     }
 
     // Supprimer les participants
@@ -84,7 +108,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(200).json({
       success: true,
       winner: winnerData,
-      allParticipants: participants
+      allParticipants: participants,
+      newParticipantsAdded: newParticipants.length
     })
 
   } catch (error) {

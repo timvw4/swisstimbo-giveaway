@@ -1,16 +1,27 @@
 import React, { useEffect, useState } from 'react'
 import Layout from '@/components/Layout'
 import { supabase } from '@/lib/supabaseClient'
-import Countdown from 'react-countdown'
+import dynamic from 'next/dynamic'
 import { getNextDrawDate } from '@/utils/dateUtils'
 import Link from 'next/link'
 
-interface CountdownProps {
+// 🔧 CORRECTION : Interface pour les props du renderer (pas du composant)
+interface CountdownRenderProps {
   days: number
   hours: number
   minutes: number
   seconds: number
 }
+
+// 🔧 CORRECTION : Interface pour le composant Countdown complet
+interface CountdownProps {
+  date: Date | number
+  renderer: (props: CountdownRenderProps) => JSX.Element
+}
+
+const Countdown = dynamic<CountdownProps>(() => import('react-countdown'), {
+  ssr: false
+})
 
 export default function Home() {
   const [participantCount, setParticipantCount] = useState<number>(0)
@@ -75,7 +86,7 @@ export default function Home() {
             <h3 className="text-xl md:text-2xl font-bold mb-2">
               <Countdown 
                 date={getNextDrawDate()}
-                renderer={(props: CountdownProps) => (
+                renderer={(props: CountdownRenderProps) => (
                   <span>
                     {props.days > 0 && `${props.days}j `}
                     {props.hours}h {props.minutes}m {props.seconds}s

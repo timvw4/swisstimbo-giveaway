@@ -41,20 +41,21 @@ interface PostDrawState {
 
 export default function Tirage() {
   const [participants, setParticipants] = useState<Participant[]>([])
-  const [frozenParticipants, setFrozenParticipants] = useState<Participant[]>([]) // Liste figée pour affichage
+  const [frozenParticipants, setFrozenParticipants] = useState<Participant[]>([])
   const [previousWinners, setPreviousWinners] = useState<string[]>([])
   const [isSpinning, setIsSpinning] = useState(false)
   const [winner, setWinner] = useState<Participant | null>(null)
   const [isClient, setIsClient] = useState(false)
   const [isSaved, setIsSaved] = useState(false)
   const [showWinnerMessage, setShowWinnerMessage] = useState(false)
-  const [isInPostDrawPeriod, setIsInPostDrawPeriod] = useState(false) // Période de 5 minutes après tirage
+  const [isInPostDrawPeriod, setIsInPostDrawPeriod] = useState(false)
+  const [lastCheckedWinner, setLastCheckedWinner] = useState<string | null>(null)
   const router = useRouter()
   
   useEffect(() => {
     setIsClient(true)
     
-    // Vérifier s'il y a un état post-tirage persisté au chargement de la page
+    // Vérifier s'il y a un état post-tirage persisté
     if (typeof window !== 'undefined') {
       const savedState = localStorage.getItem('postDrawState')
       if (savedState) {
@@ -62,22 +63,19 @@ export default function Tirage() {
           const state: PostDrawState = JSON.parse(savedState)
           const now = Date.now()
           
-          // Vérifier si la période de 5 minutes n'est pas expirée
           if (now < state.endTime) {
-            // Restaurer l'état
             setFrozenParticipants(state.frozenParticipants)
             setWinner(state.winner)
             setIsInPostDrawPeriod(true)
             setIsSaved(true)
             setShowWinnerMessage(true)
+            setLastCheckedWinner(state.winner.id)
             
-            // Programmer la fin de la période
             const remainingTime = state.endTime - now
             setTimeout(() => {
               clearPostDrawState()
             }, remainingTime)
           } else {
-            // La période est expirée, nettoyer
             localStorage.removeItem('postDrawState')
           }
         } catch (error) {
@@ -115,163 +113,89 @@ export default function Tirage() {
     setIsInPostDrawPeriod(false)
   }
 
-  const saveWinner = async (winner: Participant) => {
+  // 🔧 NOUVEAU : Fonction pour détecter un nouveau tirage
+  const checkForNewDraw = async () => {
     try {
-      await new Promise(resolve => setTimeout(resolve, 10000))
+      // Vérifier s'il y a un nouveau gagnant dans les 2 dernières minutes
+      const recentTime = new Date()
+      recentTime.setMinutes(recentTime.getMinutes() - 2)
 
-      // 1. Sauvegarder le gagnant
-      const { data: winnerData, error: winnerError } = await supabase
+      const { data: recentWinner } = await supabase
         .from('winners')
-        .insert([{
-          participant_id: winner.id,
-          pseudoinstagram: winner.pseudoinstagram,
-          draw_date: new Date().toISOString(),
-          montant: 20
-        }])
-        .select()
+        .select('*')
+        .gte('draw_date', recentTime.toISOString())
+        .order('draw_date', { ascending: false })
+        .limit(1)
         .single()
 
-      if (winnerError) throw winnerError
-
-      // 2. Récupérer tous les participants pour l'historique
-      const { data: allParticipants, error: fetchError } = await supabase
-        .from('participants')
-        .select('*')
-
-      if (fetchError) throw fetchError
-
-      // 3. Vérifier quels participants ne sont PAS encore dans l'historique
-      if (allParticipants && winnerData) {
-        // Récupérer tous les pseudos déjà présents dans l'historique
-        const { data: existingHistory, error: historyFetchError } = await supabase
+      if (recentWinner && recentWinner.id !== lastCheckedWinner && !isInPostDrawPeriod) {
+        console.log('Nouveau tirage détecté !', recentWinner)
+        
+        const { data: historicalParticipants } = await supabase
           .from('participants_history')
-          .select('pseudoinstagram')
+          .select('*')
+          .eq('draw_id', recentWinner.id)
 
-        if (historyFetchError) throw historyFetchError
+        if (historicalParticipants) {
+          setIsSpinning(true)
+          setFrozenParticipants(historicalParticipants.map(p => ({
+            id: p.id,
+            pseudoinstagram: p.pseudoinstagram,
+            npa: p.npa,
+            created_at: p.created_at
+          })))
 
-        // Créer un Set des pseudos déjà présents pour une recherche rapide
-        const existingPseudos = new Set(
-          existingHistory?.map(entry => entry.pseudoinstagram) || []
-        )
+          // Trouver le gagnant dans la liste
+          const winnerData = {
+            id: recentWinner.participant_id,
+            pseudoinstagram: recentWinner.pseudoinstagram,
+            npa: '', // On n'a pas le NPA dans la table winners
+            created_at: recentWinner.draw_date
+          }
 
-        // Filtrer pour ne garder que les nouveaux participants
-        const newParticipants = allParticipants.filter(
-          participant => !existingPseudos.has(participant.pseudoinstagram)
-        )
-
-        console.log(`Participants total: ${allParticipants.length}`)
-        console.log(`Participants déjà dans l'historique: ${existingPseudos.size}`)
-        console.log(`Nouveaux participants à ajouter: ${newParticipants.length}`)
-
-        // Sauvegarder SEULEMENT les nouveaux participants dans l'historique
-        if (newParticipants.length > 0) {
-          const historyEntries = newParticipants.map(participant => ({
-            pseudoinstagram: participant.pseudoinstagram,
-            npa: participant.npa,
-            created_at: participant.created_at,
-            draw_date: winnerData.draw_date,
-            draw_id: winnerData.id
-          }))
-
-          const { error: historyError } = await supabase
-            .from('participants_history')
-            .insert(historyEntries)
-
-          if (historyError) throw historyError
-          
-          console.log(`${newParticipants.length} nouveaux participants ajoutés à l'historique`)
-        } else {
-          console.log('Aucun nouveau participant à ajouter (tous déjà présents dans l\'historique)')
-        }
-      }
-
-      // 4. SUPPRIMER IMMÉDIATEMENT les participants de la base de données
-      const { error: deleteError } = await supabase
-        .from('participants')
-        .delete()
-        .not('id', 'is', null)
-
-      if (deleteError) throw deleteError
-
-      // 5. Figer la liste des participants pour l'affichage pendant 5 minutes
-      setFrozenParticipants([...participants])
-      setIsInPostDrawPeriod(true)
-      setIsSaved(true)
-      setShowWinnerMessage(true)
-      
-      // 6. Sauvegarder l'état dans localStorage
-      savePostDrawState([...participants], winner)
-      
-      // Redirection après 5 secondes
-      setTimeout(() => {
-        router.push('/gagnants')
-      }, 5000)
-      
-      // 7. Après 5 minutes : réinitialiser complètement la page tirage
-      setTimeout(() => {
-        clearPostDrawState()
-      }, 5 * 60 * 1000) // 5 minutes en millisecondes
-
-    } catch (err) {
-      console.error('Erreur lors de la sauvegarde:', err)
-    }
-  }
-
-  const handleTestDraw = () => {
-    console.log("Nombre de participants:", participants.length)
-    if (participants.length > 0) {
-      console.log("Début du tirage test")
-      performDraw()
-    } else {
-      console.log("Aucun participant trouvé")
-      alert('Aucun participant disponible pour le test')
-    }
-  }
-
-  const performDraw = async () => {
-    if (participants.length > 0) {
-      setIsSpinning(true)
-      
-      try {
-        // Appeler l'API pour le tirage centralisé
-        const response = await fetch('/api/perform-draw', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' }
-        })
-        
-        const data = await response.json()
-        
-        if (data.success) {
-          setWinner(data.winner)
-          
-          // 🔧 NOUVEAU : Mettre à jour immédiatement la liste des anciens gagnants
-          setPreviousWinners(prev => [...prev, data.winner.pseudoinstagram])
-          
+          // Après 10 secondes d'animation, afficher le résultat
           setTimeout(() => {
+            setWinner(winnerData)
             setIsSpinning(false)
             setShowWinnerMessage(true)
             setIsSaved(true)
-            
-            // Redirection après 5 secondes
+            setIsInPostDrawPeriod(true)
+            setLastCheckedWinner(recentWinner.id)
+
+            // Mettre à jour la liste des gagnants précédents
+            setPreviousWinners(prev => {
+              if (!prev.includes(recentWinner.pseudoinstagram)) {
+                return [...prev, recentWinner.pseudoinstagram]
+              }
+              return prev
+            })
+
+            // Sauvegarder l'état
+            savePostDrawState(historicalParticipants.map(p => ({
+              id: p.id,
+              pseudoinstagram: p.pseudoinstagram,
+              npa: p.npa,
+              created_at: p.created_at
+            })), winnerData)
+
+            // Nettoyer après 5 minutes (gardé)
             setTimeout(() => {
-              router.push('/gagnants')
-            }, 5000)
+              clearPostDrawState()
+            }, 5 * 60 * 1000)
           }, 10000)
         }
-      } catch (error) {
-        console.error('Erreur lors du tirage:', error)
-        setIsSpinning(false)
       }
+    } catch (error) {
+      // Pas de nouveau tirage trouvé, c'est normal
     }
-  }
-
-  const handleCountdownComplete = () => {
-    performDraw()
   }
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // Vérifier d'abord s'il y a un nouveau tirage
+        await checkForNewDraw()
+
         // Récupérer les participants actuels
         const { data: participantsData, error: participantsError } = await supabase
           .from('participants')
@@ -298,7 +222,6 @@ export default function Tirage() {
         }
 
         if (winnersData) {
-          // Extraire uniquement les pseudos des gagnants précédents
           const winnerPseudos = winnersData.map(winner => winner.pseudoinstagram)
           setPreviousWinners(winnerPseudos)
         }
@@ -307,14 +230,16 @@ export default function Tirage() {
       }
     }
 
-    // Mettre à jour toutes les 30 secondes
-    const interval = setInterval(fetchData, 30000)
-    fetchData() // Première exécution
+    // Vérifier plus fréquemment pendant les heures de tirage
+    const now = new Date()
+    const isDrawTime = (now.getDay() === 0 || now.getDay() === 3) && now.getHours() === 20
+    const interval = setInterval(fetchData, isDrawTime ? 5000 : 30000) // 5s pendant tirage, 30s sinon
+    
+    fetchData()
 
-    return () => clearInterval(interval) // Nettoyage à la destruction du composant
-  }, [isInPostDrawPeriod]) // Dépendance sur isInPostDrawPeriod
+    return () => clearInterval(interval)
+  }, [isInPostDrawPeriod, lastCheckedWinner])
 
-  // Déterminer quels participants afficher
   const displayedParticipants = isInPostDrawPeriod ? frozenParticipants : participants
 
   return (
@@ -328,7 +253,7 @@ export default function Tirage() {
             <div className="text-2xl md:text-3xl font-bold">
               <Countdown 
                 date={getNextDrawDate()} 
-                onComplete={handleCountdownComplete}
+                onComplete={() => {}} // Plus de fonction car tirage automatique
                 renderer={(props: CountdownRenderProps) => (
                   <span>
                     {props.days > 0 && `${props.days}j `}
@@ -340,20 +265,9 @@ export default function Tirage() {
           )}
         </div>
 
-        {/* Bouton de test - visible uniquement en développement */}
-        {process.env.NODE_ENV === 'development' && (
-          <button
-            onClick={handleTestDraw}
-            disabled={isSpinning}
-            className="bg-dollar-green text-white px-6 py-2 rounded mb-6 hover:bg-opacity-90 transition disabled:opacity-50"
-          >
-            {isSpinning ? 'Tirage en cours...' : 'Tester le tirage'}
-          </button>
-        )}
-
         {isClient && displayedParticipants.length > 0 ? (
           <div className="mb-6 md:mb-8">
-            {/* Message de félicitations - affiché AU-DESSUS de la grille pendant 5 minutes */}
+            {/* Message de félicitations */}
             {!isSpinning && winner && showWinnerMessage && (
               <div className="mb-6">
                 <div className="bg-dollar-green text-white p-4 md:p-6 rounded-lg">
@@ -365,7 +279,7 @@ export default function Tirage() {
               </div>
             )}
 
-            {/* Grille des participants (figée ou en temps réel selon la période) */}
+            {/* Grille des participants */}
             <PixelGrid
               participants={displayedParticipants}
               previousWinners={previousWinners}
@@ -374,14 +288,12 @@ export default function Tirage() {
               onStopSpinning={() => setIsSpinning(false)}
             />
             
-            {/* Message de réinitialisation - affiché EN DESSOUS de la grille pendant 5 minutes */}
+            {/* Message de réinitialisation */}
             {!isSpinning && winner && isSaved && (
               <div className="mt-6">
                 <div className="bg-blue-100 text-blue-800 p-4 rounded-lg">
                   <p className="text-lg">
                     Le tirage est terminé ! Les participants seront réinitialisés dans 5 minutes.
-                    <br />
-                    Redirection vers la page des gagnants dans quelques secondes...
                   </p>
                 </div>
               </div>
