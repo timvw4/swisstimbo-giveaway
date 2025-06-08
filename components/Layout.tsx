@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import Head from 'next/head'
 import Link from 'next/link'
+import { useSessionTracking } from '@/hooks/useSessionTracking'
 
 interface LayoutProps {
   children: React.ReactNode
@@ -14,6 +15,9 @@ export default function Layout({
   description = "Participez gratuitement et gagnez 20 CHF ! Tirages tous les mercredis et dimanches à 20h. Inscription simple et rapide."
 }: LayoutProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  
+  // 🔧 NOUVEAU : Activer le tracking de session pour tous les utilisateurs
+  useSessionTracking()
   
   // 🔧 CORRECTION : Gérer les URLs selon l'environnement
   const isDevelopment = process.env.NODE_ENV === 'development'

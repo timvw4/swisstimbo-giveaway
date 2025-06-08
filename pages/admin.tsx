@@ -30,6 +30,7 @@ export default function Admin() {
     currentParticipants: 0,
     totalHistoryParticipants: 0,
     totalWinners: 0,
+    activeUsers: 0,
     loading: true
   })
   
@@ -79,10 +80,15 @@ export default function Admin() {
         .from('winners')
         .select('*', { count: 'exact' })
 
+      // 🆕 NOUVEAU : Récupérer le nombre d'utilisateurs connectés
+      const activeUsersResponse = await fetch('/api/track-session')
+      const activeUsersData = await activeUsersResponse.json()
+
       setStats({
         currentParticipants: currentCount || 0,
         totalHistoryParticipants: historyCount || 0,
         totalWinners: winnersCount || 0,
+        activeUsers: activeUsersData.activeUsers || 0,
         loading: false
       })
     } catch (error) {
@@ -115,6 +121,24 @@ export default function Admin() {
     if (isAuthenticated) {
       fetchHistory()
       fetchStats() // 📊 NOUVEAU: Récupérer les stats au chargement
+      
+      // 🆕 NOUVEAU : Actualiser automatiquement les utilisateurs connectés toutes les 30 secondes
+      const interval = setInterval(async () => {
+        try {
+          const activeUsersResponse = await fetch('/api/track-session')
+          const activeUsersData = await activeUsersResponse.json()
+          
+          setStats(prev => ({
+            ...prev,
+            activeUsers: activeUsersData.activeUsers || 0
+          }))
+        } catch (error) {
+          console.error('Erreur lors de la mise à jour des utilisateurs connectés:', error)
+        }
+      }, 30000) // 30 secondes
+
+      // Nettoyer l'intervalle lors du démontage
+      return () => clearInterval(interval)
     }
   }, [isAuthenticated])
 
@@ -219,7 +243,7 @@ export default function Admin() {
         </h1>
 
         {/* 📊 NOUVEAU: Tableau de bord des statistiques */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
           {/* Participants actuels */}
           <div className="bg-white p-6 rounded-lg shadow border-l-4 border-dollar-green">
             <div className="flex items-center justify-between">
@@ -235,6 +259,24 @@ export default function Admin() {
               <div className="text-dollar-green">
                 <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          {/* 🆕 NOUVEAU : Utilisateurs connectés */}
+          <div className="bg-white p-6 rounded-lg shadow border-l-4 border-green-500">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Utilisateurs connectés</p>
+                <p className="text-2xl font-bold text-green-600">
+                  {stats.loading ? '...' : stats.activeUsers}
+                </p>
+                <p className="text-xs text-gray-500">En temps réel</p>
+              </div>
+              <div className="text-green-500">
+                <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
                 </svg>
               </div>
             </div>
