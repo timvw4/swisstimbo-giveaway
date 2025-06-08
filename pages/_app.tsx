@@ -5,12 +5,20 @@ import { scheduleNextDraw } from '@/utils/autoDrawing'
 
 export default function App({ Component, pageProps }: AppProps) {
   useEffect(() => {
-    // Démarrer le système de tirage automatique au chargement de l'app
-    if (typeof window !== 'undefined') {
+    // 🔧 CORRECTION : S'assurer qu'un seul système de tirage automatique est actif
+    if (typeof window !== 'undefined' && !window.__drawSystemInitialized) {
       console.log('Initialisation du système de tirage automatique...')
+      window.__drawSystemInitialized = true
       scheduleNextDraw()
     }
   }, [])
 
   return <Component {...pageProps} />
+}
+
+// Déclaration TypeScript pour la variable globale
+declare global {
+  interface Window {
+    __drawSystemInitialized?: boolean
+  }
 } 

@@ -2,15 +2,27 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { supabase } from '@/lib/supabaseClient'
 
+// 🔧 NOUVEAU : Variable globale pour verrouiller les tirages simultanés
+let drawInProgress = false
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
+  // 🔧 NOUVEAU : Vérification immédiate du verrou
+  if (drawInProgress) {
+    console.log('[PERFORM DRAW] Tirage déjà en cours, requête rejetée')
+    return res.status(429).json({ error: 'Un tirage est déjà en cours' })
+  }
+
+  // 🔧 NOUVEAU : Activer le verrou
+  drawInProgress = true
+
   try {
-    // Vérifier qu'on n'a pas déjà fait un tirage récemment (1 minute)
+    // 🔧 AMÉLIORATION : Vérifier qu'on n'a pas déjà fait un tirage récemment (5 minutes au lieu de 1)
     const lastDrawCheck = new Date()
-    lastDrawCheck.setMinutes(lastDrawCheck.getMinutes() - 1)
+    lastDrawCheck.setMinutes(lastDrawCheck.getMinutes() - 5)
 
     const { data: recentWinner } = await supabase
       .from('winners')
@@ -19,6 +31,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .single()
 
     if (recentWinner) {
+      console.log('[PERFORM DRAW] Tirage récent détecté, annulation')
       return res.status(400).json({ 
         error: 'Un tirage a déjà été effectué récemment',
         winner: recentWinner 
@@ -34,9 +47,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'Aucun participant' })
     }
 
+    console.log(`[PERFORM DRAW] Début du tirage avec ${participants.length} participants`)
+
     // TIRAGE UNIQUE côté serveur
     const winnerIndex = Math.floor(Math.random() * participants.length)
     const winner = participants[winnerIndex]
+
+    console.log(`[PERFORM DRAW] Gagnant sélectionné: ${winner.pseudoinstagram}`)
 
     // Sauvegarder le gagnant
     const { data: winnerData, error: winnerError } = await supabase
@@ -50,7 +67,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .select()
       .single()
 
-    if (winnerError) throw winnerError
+    if (winnerError) {
+      console.error('[PERFORM DRAW] Erreur lors de la sauvegarde du gagnant:', winnerError)
+      throw winnerError
+    }
+
+    console.log(`[PERFORM DRAW] Gagnant sauvegardé avec l'ID: ${winnerData.id}`)
 
     // 🔧 AMÉLIORATION : Éviter les doublons de manière plus précise
     const { data: existingHistory } = await supabase
@@ -103,7 +125,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Supprimer les participants
+    console.log('[PERFORM DRAW] Suppression des participants de la table active...')
     await supabase.from('participants').delete().not('id', 'is', null)
+
+    console.log('[PERFORM DRAW] Tirage terminé avec succès !')
 
     return res.status(200).json({
       success: true,
@@ -113,8 +138,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     })
 
   } catch (error) {
-    console.error('Erreur tirage:', error)
+    console.error('[PERFORM DRAW] Erreur tirage:', error)
     const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue'
     return res.status(500).json({ error: errorMessage })
+  } finally {
+    // 🔧 NOUVEAU : Toujours libérer le verrou
+    drawInProgress = false
+    console.log('[PERFORM DRAW] Verrou de tirage libéré')
   }
 } 
