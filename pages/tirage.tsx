@@ -145,25 +145,21 @@ export default function Tirage() {
 
   // 🔧 NOUVEAU : Fonction pour traiter un gagnant en temps réel avec useCallback
   const handleRealtimeWinner = useCallback(async (winnerData: any) => {
-    console.log('⚡ Traitement temps réel du gagnant:', winnerData)
-    console.log('📱 Sur appareil:', isMobile ? 'Mobile' : 'Desktop')
+    console.log('⚡ Traitement temps réel du gagnant:', winnerData.pseudoinstagram)
     
     // Vérifier si ce gagnant n'a pas déjà été traité
     if (winnerData.id === lastCheckedWinner || isInPostDrawPeriod) {
-      console.log('🔄 Gagnant déjà traité ou en période post-tirage, ignoré')
+      console.log('🔄 Gagnant déjà traité, ignoré')
       return
     }
     
     console.log('✅ Nouveau tirage détecté, préparation de l\'animation...')
-    console.log(`🔍 Participants actuels dans state: ${participants.length}`)
-    console.log(`🔍 Participants sauvegardés: ${participantsAtDrawTime.length}`)
     
     // 🔧 SOLUTION SIMPLE : Utiliser les participants sauvegardés ou actuels
     const allParticipants = participantsAtDrawTime.length > 0 ? participantsAtDrawTime : participants
     
     if (allParticipants && allParticipants.length > 0) {
-      console.log(`📊 Participants pour l'animation: ${allParticipants.length}`)
-      console.log('👥 Participants:', allParticipants.map(p => p.pseudoinstagram))
+      console.log(`📊 Animation avec ${allParticipants.length} participants`)
       
       // Utiliser tous les participants pour l'animation
       setFrozenParticipants([...allParticipants])
@@ -179,8 +175,7 @@ export default function Tirage() {
       // 🔧 SIMPLIFIÉ : Toujours faire une animation de 8 secondes
       const animationTime = 8000 // 8 secondes d'animation TOUJOURS
       
-      console.log(`🎬 LANCEMENT ANIMATION pour ${animationTime}ms`)
-      console.log(`🏆 Gagnant qui sera révélé: ${winner.pseudoinstagram}`)
+      console.log(`🎬 LANCEMENT ANIMATION - 8 secondes`)
       
       setIsSpinning(true)
       setWaitingForDraw(false)
@@ -194,11 +189,9 @@ export default function Tirage() {
       }, animationTime)
       
     } else {
-      console.log('❌ Aucun participant trouvé pour l\'animation')
-      console.log('❌ Debug: participants state:', participants)
-      console.log('❌ Debug: participantsAtDrawTime state:', participantsAtDrawTime)
+      console.log('❌ Aucun participant pour l\'animation')
     }
-  }, [participants, participantsAtDrawTime, lastCheckedWinner, isInPostDrawPeriod, isMobile])
+  }, [lastCheckedWinner, isInPostDrawPeriod]) // 🔧 RÉDUIT : Seulement les dépendances essentielles
 
   // 🔧 NOUVEAU : Fonction commune pour terminer l'animation
   const completeDrawAnimation = (winner: Participant, participants: any[], drawDate: string, drawTimestamp: number) => {
@@ -398,7 +391,6 @@ export default function Tirage() {
       if (!waitingForDraw || !isMobile) return
       
       try {
-        console.log('📱 FALLBACK MOBILE : Vérification nouveaux gagnants...')
         const { data: recentWinners, error } = await supabase
           .from('winners')
           .select('*')
@@ -432,27 +424,19 @@ export default function Tirage() {
       ? setInterval(checkForNewWinners, 2000) // Vérifie toutes les 2 secondes sur mobile
       : null
     
-    console.log('📱 Polling actif:', {
-      mobile: isMobile,
-      waiting: waitingForDraw,
-      fallback: !!mobileInterval
-    })
-    
     return () => {
       clearInterval(normalInterval)
       if (mobileInterval) {
         clearInterval(mobileInterval)
       }
     }
-  }, [isInPostDrawPeriod, isMobile, waitingForDraw, lastCheckedWinnerTime, handleRealtimeWinner])
+  }, [isInPostDrawPeriod, isMobile, waitingForDraw, lastCheckedWinnerTime]) // 🔧 SUPPRIMÉ handleRealtimeWinner
 
   const displayedParticipants = (isInPostDrawPeriod || isSpinning) ? frozenParticipants : participants
 
   // 🔧 NOUVEAU : Setup de la subscription Realtime
   useEffect(() => {
     console.log('🚀 Initialisation de la subscription Realtime pour les tirages...')
-    console.log('📱 User Agent:', navigator.userAgent)
-    console.log('📱 Is Mobile:', /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent))
     
     const subscription = supabase
       .channel('winners-realtime')
@@ -465,7 +449,6 @@ export default function Tirage() {
         },
         (payload) => {
           console.log('🎉 NOUVEAU TIRAGE DÉTECTÉ EN TEMPS RÉEL !', payload.new)
-          console.log('📱 Traitement sur appareil:', /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop')
           
           // Traiter immédiatement le nouveau tirage
           handleRealtimeWinner(payload.new)
@@ -473,7 +456,6 @@ export default function Tirage() {
       )
       .subscribe((status) => {
         console.log('📡 Status subscription Realtime:', status)
-        console.log('📱 Sur appareil:', /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop')
         if (status === 'SUBSCRIBED') {
           console.log('✅ Subscription active - Prêt pour les tirages en temps réel !')
         }
