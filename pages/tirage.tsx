@@ -161,6 +161,14 @@ export default function Tirage() {
       if (recentWinner && recentWinner.id !== lastCheckedWinner && !isInPostDrawPeriod) {
         console.log('🎉 NOUVEAU TIRAGE DÉTECTÉ !', recentWinner)
         
+        // 🔧 LOGS DÉTAILLÉS pour debugger les problèmes de timing
+        console.log('🕐 Timestamps détaillés:')
+        console.log(`  - draw_date (string): "${recentWinner.draw_date}"`)
+        console.log(`  - draw_date (parsed): ${new Date(recentWinner.draw_date)}`)
+        console.log(`  - drawTime (timestamp): ${new Date(recentWinner.draw_date).getTime()}`)
+        console.log(`  - now (timestamp): ${Date.now()}`)
+        console.log(`  - Browser timezone: ${Intl.DateTimeFormat().resolvedOptions().timeZone}`)
+        
         // 🔧 SIMPLIFICATION : Calculer directement le temps écoulé
         const drawTime = new Date(recentWinner.draw_date).getTime()
         const now = Date.now()
@@ -210,10 +218,26 @@ export default function Tirage() {
           // 🔧 SIMPLIFICATION : Logique plus claire pour l'animation
           const timeForAnimation = 10 * 1000 // 10 secondes
           
-          if (timeSinceDraw < timeForAnimation) {
-            // Animation en cours
-            const remainingAnimationTime = timeForAnimation - timeSinceDraw
-            console.log(`🎲 DÉMARRAGE ANIMATION - Temps restant: ${Math.round(remainingAnimationTime / 1000)}s`)
+          console.log(`🔢 Calcul du timing:`)
+          console.log(`  - Temps pour animation: ${timeForAnimation}ms (${timeForAnimation/1000}s)`)
+          console.log(`  - Temps écoulé depuis tirage: ${timeSinceDraw}ms (${Math.round(timeSinceDraw/1000)}s)`)
+          console.log(`  - Animation nécessaire: ${timeSinceDraw < timeForAnimation}`)
+          
+          // 🔧 NOUVELLE LOGIQUE : Forcer l'animation si le tirage est très récent (moins de 30 secondes)
+          const isVeryRecentDraw = timeSinceDraw < (30 * 1000) // 30 secondes
+          
+          if (timeSinceDraw < timeForAnimation || isVeryRecentDraw) {
+            // Animation en cours ou tirage très récent
+            let remainingAnimationTime
+            
+            if (timeSinceDraw < timeForAnimation) {
+              remainingAnimationTime = timeForAnimation - timeSinceDraw
+              console.log(`🎲 ANIMATION EN COURS - Temps restant: ${Math.round(remainingAnimationTime / 1000)}s`)
+            } else {
+              // Tirage récent mais animation "déjà finie" selon le calcul - on force quand même une animation courte
+              remainingAnimationTime = 3000 // 3 secondes d'animation minimum
+              console.log(`🎲 ANIMATION FORCÉE (tirage récent) - Durée: ${Math.round(remainingAnimationTime / 1000)}s`)
+            }
             
             setIsSpinning(true)
             setWaitingForDraw(false)
@@ -235,8 +259,13 @@ export default function Tirage() {
                 created_at: p.created_at
               })), winnerData, recentWinner.draw_date)
 
-              // Programmer le nettoyage
-              const remainingDisplayTime = fiveMinutes - (Date.now() - drawTime)
+              // Programmer le nettoyage basé sur l'heure réelle du tirage
+              const now = Date.now()
+              const fiveMinutesFromDraw = drawTime + fiveMinutes
+              const remainingDisplayTime = fiveMinutesFromDraw - now
+              
+              console.log(`🧹 Nettoyage programmé dans ${Math.round(remainingDisplayTime / 1000)}s`)
+              
               if (remainingDisplayTime > 0) {
                 setTimeout(() => {
                   console.log('🧹 Nettoyage automatique de l\'état post-tirage')

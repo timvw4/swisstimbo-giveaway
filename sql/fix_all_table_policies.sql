@@ -7,13 +7,18 @@
 -- Désactiver temporairement RLS pour nettoyer
 ALTER TABLE winners DISABLE ROW LEVEL SECURITY;
 
--- Supprimer toutes les politiques existantes
-DROP POLICY IF EXISTS "allow_select_winners" ON winners;
-DROP POLICY IF EXISTS "allow_insert_winners" ON winners;
-DROP POLICY IF EXISTS "allow_update_winners" ON winners;
-DROP POLICY IF EXISTS "allow_delete_winners" ON winners;
-DROP POLICY IF EXISTS "Enable read access for all users" ON winners;
-DROP POLICY IF EXISTS "Enable insert for all users" ON winners;
+-- 🔧 CORRECTION : Supprimer TOUTES les politiques existantes de manière complète
+DO $$
+DECLARE
+    policy_record RECORD;
+BEGIN
+    -- Supprimer toutes les politiques existantes sur la table winners
+    FOR policy_record IN 
+        SELECT policyname FROM pg_policies WHERE tablename = 'winners'
+    LOOP
+        EXECUTE 'DROP POLICY IF EXISTS "' || policy_record.policyname || '" ON winners';
+    END LOOP;
+END $$;
 
 -- Réactiver RLS
 ALTER TABLE winners ENABLE ROW LEVEL SECURITY;
@@ -45,10 +50,17 @@ USING (true);
 -- =================================
 ALTER TABLE participants DISABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS "allow_select_participants" ON participants;
-DROP POLICY IF EXISTS "allow_insert_participants" ON participants;
-DROP POLICY IF EXISTS "allow_update_participants" ON participants;
-DROP POLICY IF EXISTS "allow_delete_participants" ON participants;
+-- 🔧 CORRECTION : Supprimer toutes les politiques participants
+DO $$
+DECLARE
+    policy_record RECORD;
+BEGIN
+    FOR policy_record IN 
+        SELECT policyname FROM pg_policies WHERE tablename = 'participants'
+    LOOP
+        EXECUTE 'DROP POLICY IF EXISTS "' || policy_record.policyname || '" ON participants';
+    END LOOP;
+END $$;
 
 ALTER TABLE participants ENABLE ROW LEVEL SECURITY;
 
@@ -78,10 +90,17 @@ USING (true);
 -- =================================
 ALTER TABLE participants_history DISABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS "allow_select_participants_history" ON participants_history;
-DROP POLICY IF EXISTS "allow_insert_participants_history" ON participants_history;
-DROP POLICY IF EXISTS "allow_update_participants_history" ON participants_history;
-DROP POLICY IF EXISTS "allow_delete_participants_history" ON participants_history;
+-- 🔧 CORRECTION : Supprimer toutes les politiques participants_history
+DO $$
+DECLARE
+    policy_record RECORD;
+BEGIN
+    FOR policy_record IN 
+        SELECT policyname FROM pg_policies WHERE tablename = 'participants_history'
+    LOOP
+        EXECUTE 'DROP POLICY IF EXISTS "' || policy_record.policyname || '" ON participants_history';
+    END LOOP;
+END $$;
 
 ALTER TABLE participants_history ENABLE ROW LEVEL SECURITY;
 
@@ -115,10 +134,16 @@ BEGIN
     IF EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'active_sessions') THEN
         ALTER TABLE active_sessions DISABLE ROW LEVEL SECURITY;
         
-        DROP POLICY IF EXISTS "allow_select_active_sessions" ON active_sessions;
-        DROP POLICY IF EXISTS "allow_insert_active_sessions" ON active_sessions;
-        DROP POLICY IF EXISTS "allow_update_active_sessions" ON active_sessions;
-        DROP POLICY IF EXISTS "allow_delete_active_sessions" ON active_sessions;
+        -- Supprimer toutes les politiques active_sessions
+        DECLARE
+            policy_record RECORD;
+        BEGIN
+            FOR policy_record IN 
+                SELECT policyname FROM pg_policies WHERE tablename = 'active_sessions'
+            LOOP
+                EXECUTE 'DROP POLICY IF EXISTS "' || policy_record.policyname || '" ON active_sessions';
+            END LOOP;
+        END;
         
         ALTER TABLE active_sessions ENABLE ROW LEVEL SECURITY;
         
