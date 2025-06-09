@@ -133,11 +133,13 @@ export default function Tirage() {
   // 🔧 AMÉLIORÉ : Fonction pour détecter un nouveau tirage (plus robuste)
   const checkForNewDraw = async () => {
     try {
+      console.log('🔍 Vérification de nouveau tirage...')
+      
       // 🔧 AMÉLIORATION : Vérifier s'il y a un nouveau gagnant dans les 15 dernières minutes
       const recentTime = new Date()
       recentTime.setMinutes(recentTime.getMinutes() - 15)
 
-      const { data: recentWinner } = await supabase
+      const { data: recentWinner, error } = await supabase
         .from('winners')
         .select('*')
         .gte('draw_date', recentTime.toISOString())
@@ -145,24 +147,47 @@ export default function Tirage() {
         .limit(1)
         .single()
 
+      if (error) {
+        if (!error.message.includes('PGRST116')) {
+          console.error('❌ Erreur lors de la vérification:', error)
+        }
+        return
+      }
+
+      console.log('📊 Dernier gagnant trouvé:', recentWinner?.pseudoinstagram || 'Aucun')
+      console.log('🆔 ID du dernier gagnant vérifié:', lastCheckedWinner)
+      console.log('🏠 En période post-tirage:', isInPostDrawPeriod)
+
       if (recentWinner && recentWinner.id !== lastCheckedWinner && !isInPostDrawPeriod) {
-        console.log('🎉 Nouveau tirage détecté !', recentWinner)
+        console.log('🎉 NOUVEAU TIRAGE DÉTECTÉ !', recentWinner)
         
-        // 🔧 NOUVEAU : Vérifier si ce tirage est encore dans la période d'affichage (5 minutes)
+        // 🔧 SIMPLIFICATION : Calculer directement le temps écoulé
         const drawTime = new Date(recentWinner.draw_date).getTime()
         const now = Date.now()
         const timeSinceDraw = now - drawTime
-        const fiveMinutes = 5 * 60 * 1000
+        const fiveMinutes = 5 * 60 * 1000 // 5 minutes en millisecondes
+        
+        console.log(`⏰ Heure du tirage: ${new Date(recentWinner.draw_date).toLocaleString()}`)
+        console.log(`⏰ Maintenant: ${new Date(now).toLocaleString()}`)
+        console.log(`⌛ Temps écoulé: ${Math.round(timeSinceDraw / 1000)}s`)
+        console.log(`⌛ Limite 5 minutes: ${Math.round(fiveMinutes / 1000)}s`)
         
         if (timeSinceDraw > fiveMinutes) {
           console.log('⏰ Tirage trop ancien (plus de 5 minutes), ignoré')
           return
         }
         
-        const { data: historicalParticipants } = await supabase
+        console.log('✅ Tirage dans les temps, récupération des participants...')
+        
+        const { data: historicalParticipants, error: historyError } = await supabase
           .from('participants_history')
           .select('*')
           .eq('draw_id', recentWinner.id)
+
+        if (historyError) {
+          console.error('❌ Erreur récupération historique:', historyError)
+          return
+        }
 
         if (historicalParticipants && historicalParticipants.length > 0) {
           console.log(`📊 Participants historiques récupérés: ${historicalParticipants.length}`)
@@ -182,26 +207,27 @@ export default function Tirage() {
             created_at: recentWinner.draw_date
           }
 
-          // 🔧 CORRECTION : Calculer le temps restant basé sur l'heure du tirage
+          // 🔧 SIMPLIFICATION : Logique plus claire pour l'animation
           const timeForAnimation = 10 * 1000 // 10 secondes
-          const timeElapsed = timeSinceDraw
           
-          if (timeElapsed < timeForAnimation) {
-            // 🔧 Animation en cours ou pas encore finie
-            console.log(`🎲 Animation en cours (${Math.round((timeForAnimation - timeElapsed) / 1000)}s restantes)`)
+          if (timeSinceDraw < timeForAnimation) {
+            // Animation en cours
+            const remainingAnimationTime = timeForAnimation - timeSinceDraw
+            console.log(`🎲 DÉMARRAGE ANIMATION - Temps restant: ${Math.round(remainingAnimationTime / 1000)}s`)
+            
             setIsSpinning(true)
             setWaitingForDraw(false)
+            setLastCheckedWinner(recentWinner.id)
             
             setTimeout(() => {
-              console.log('🏆 Animation terminée, affichage du gagnant')
+              console.log('🏆 ANIMATION TERMINÉE - Affichage du gagnant')
               setWinner(winnerData)
               setIsSpinning(false)
               setShowWinnerMessage(true)
               setIsSaved(true)
               setIsInPostDrawPeriod(true)
-              setLastCheckedWinner(recentWinner.id)
 
-              // Sauvegarder l'état avec le timestamp exact du tirage
+              // Sauvegarder l'état
               savePostDrawState(historicalParticipants.map(p => ({
                 id: p.id,
                 pseudoinstagram: p.pseudoinstagram,
@@ -209,17 +235,19 @@ export default function Tirage() {
                 created_at: p.created_at
               })), winnerData, recentWinner.draw_date)
 
-              // Nettoyer après le temps restant
-              const remainingDisplayTime = fiveMinutes - timeSinceDraw
-              setTimeout(() => {
-                console.log('🧹 Nettoyage de l\'état post-tirage')
-                clearPostDrawState()
-              }, remainingDisplayTime)
-            }, timeForAnimation - timeElapsed)
+              // Programmer le nettoyage
+              const remainingDisplayTime = fiveMinutes - (Date.now() - drawTime)
+              if (remainingDisplayTime > 0) {
+                setTimeout(() => {
+                  console.log('🧹 Nettoyage automatique de l\'état post-tirage')
+                  clearPostDrawState()
+                }, remainingDisplayTime)
+              }
+            }, remainingAnimationTime)
             
           } else {
-            // 🔧 Animation terminée, afficher directement le gagnant
-            console.log('🏆 Affichage direct du gagnant (animation déjà terminée)')
+            // Animation déjà terminée, afficher directement
+            console.log('🏆 AFFICHAGE DIRECT DU GAGNANT (animation déjà terminée)')
             setWinner(winnerData)
             setIsSpinning(false)
             setShowWinnerMessage(true)
@@ -236,7 +264,7 @@ export default function Tirage() {
               return prev
             })
 
-            // Sauvegarder l'état avec le timestamp exact du tirage
+            // Sauvegarder l'état
             savePostDrawState(historicalParticipants.map(p => ({
               id: p.id,
               pseudoinstagram: p.pseudoinstagram,
@@ -244,7 +272,7 @@ export default function Tirage() {
               created_at: p.created_at
             })), winnerData, recentWinner.draw_date)
 
-            // Nettoyer après le temps restant
+            // Programmer le nettoyage si nécessaire
             const remainingDisplayTime = fiveMinutes - timeSinceDraw
             if (remainingDisplayTime > 0) {
               setTimeout(() => {
@@ -252,47 +280,47 @@ export default function Tirage() {
                 clearPostDrawState()
               }, remainingDisplayTime)
             } else {
-              // Le temps d'affichage est déjà écoulé
+              console.log('⏰ Temps d\'affichage déjà écoulé, nettoyage immédiat')
               clearPostDrawState()
             }
           }
         } else {
           console.log('⚠️ Aucun participant historique trouvé pour ce tirage')
         }
+      } else {
+        // Log détaillé pour comprendre pourquoi rien ne se passe
+        if (!recentWinner) {
+          console.log('📭 Aucun gagnant récent trouvé')
+        } else if (recentWinner.id === lastCheckedWinner) {
+          console.log('🔄 Gagnant déjà traité, pas de changement')
+        } else if (isInPostDrawPeriod) {
+          console.log('🏠 Déjà en période post-tirage, ignore le nouveau check')
+        }
       }
     } catch (error) {
-      // Pas de nouveau tirage trouvé, c'est normal
-      if (error instanceof Error && !error.message.includes('PGRST116')) {
-        console.error('❌ Erreur lors de la vérification de nouveau tirage:', error)
-      }
+      console.error('❌ Erreur lors de la vérification de nouveau tirage:', error)
     }
   }
 
   // 🔧 CORRIGÉ : Fonction appelée quand le décompte arrive à zéro (NE déclenche PLUS d'animation automatique)
   const handleCountdownComplete = () => {
-    console.log('⏰ Décompte terminé ! Vérification s\'il y a un tirage...')
+    console.log('⏰ COUNTDOWN TERMINÉ ! Activation du mode vérification ultra-rapide...')
     setCountdownCompleted(true)
     
-    // 🔧 CORRECTION MAJEURE : Ne PAS démarrer l'animation automatiquement
-    // Seulement afficher qu'on attend le tirage et vérifier intensivement
+    // 🔧 CORRECTION MAJEURE : Activer immédiatement le mode de vérification intensive
     setWaitingForDraw(true)
     
-    console.log('👀 Mode attente activé - recherche intensive de nouveau tirage...')
+    console.log('🚀 Mode attente activé - vérification ultra-rapide toutes les 500ms...')
     
     // Vérifier immédiatement
     checkForNewDraw()
     
-    // Puis vérifier intensivement toutes les 3 secondes pendant 10 minutes maximum
-    const checkInterval = setInterval(async () => {
-      console.log('🔍 Vérification intensive du nouveau tirage...')
-      await checkForNewDraw()
-    }, 3000)
-    
-    // Arrêter la vérification intensive après 10 minutes
+    // 🔧 NOUVEAU : Arrêter l'attente après 10 minutes si aucun tirage n'est détecté
     setTimeout(() => {
-      console.log('⏰ Timeout : Arrêt de la vérification intensive après 10 minutes')
-      clearInterval(checkInterval)
-      setWaitingForDraw(false)
+      if (waitingForDraw && !winner && !isInPostDrawPeriod) {
+        console.log('⏰ Timeout : Arrêt de la vérification intensive après 10 minutes')
+        setWaitingForDraw(false)
+      }
     }, 10 * 60 * 1000) // 10 minutes
   }
 
@@ -307,6 +335,10 @@ export default function Tirage() {
       return
     }
 
+    // 🔧 NOUVEAU : Activer immédiatement le mode vérification ultra-rapide
+    setWaitingForDraw(true)
+    console.log('🚀 Activation mode vérification ultra-rapide pour le test...')
+
     try {
       // Déclencher l'API de tirage automatique
       const response = await fetch('/api/perform-draw', {
@@ -320,19 +352,20 @@ export default function Tirage() {
       
       if (result.success) {
         console.log('🧪 TEST : Tirage automatique réussi !', result.winner)
+        console.log('🔍 Début de la vérification intensive...')
         
-        // Déclencher immédiatement la vérification de nouveau tirage
-        setTimeout(() => {
-          checkForNewDraw()
-        }, 1000)
+        // La vérification ultra-rapide va détecter le nouveau tirage automatiquement
+        // Pas besoin d'action supplémentaire
         
       } else {
         console.error('🧪 TEST : Erreur tirage automatique:', result.error)
         alert(`Erreur: ${result.error}`)
+        setWaitingForDraw(false) // Arrêter la vérification en cas d'erreur
       }
     } catch (error) {
       console.error('🧪 TEST : Erreur API:', error)
       alert('Erreur lors de l\'appel API')
+      setWaitingForDraw(false) // Arrêter la vérification en cas d'erreur
     }
   }
 
@@ -376,21 +409,24 @@ export default function Tirage() {
       }
     }
 
-    // 🔧 AMÉLIORATION MAJEURE : Synchronisation plus fréquente pendant les heures de tirage
+    // 🔧 AMÉLIORATION MAJEURE : Vérification ULTRA-FRÉQUENTE pendant les heures de tirage
     const now = new Date()
     const isDrawTime = (now.getDay() === 0 || now.getDay() === 3) && now.getHours() >= 19 && now.getHours() <= 21
     
-    // 🔧 NOUVEAU : Vérification très fréquente pendant les heures de tirage pour synchroniser tous les clients
+    // 🔧 NOUVEAU : Vérification très fréquente pour synchronisation parfaite
     let interval: number
     if (isDrawTime || waitingForDraw) {
-      interval = 2000 // 2 secondes pendant le tirage pour synchronisation parfaite
+      interval = 500 // 500ms = 0.5 seconde pendant le tirage pour synchronisation ULTRA-RAPIDE
+      console.log('🚀 Mode synchronisation ULTRA-RAPIDE activé (500ms)')
     } else if (isInPostDrawPeriod) {
-      interval = 10000 // 10 secondes pendant l'affichage du gagnant
+      interval = 5000 // 5 secondes pendant l'affichage du gagnant
+      console.log('👑 Mode affichage gagnant (5s)')
     } else {
       interval = 30000 // 30 secondes en temps normal
+      console.log('😴 Mode normal (30s)')
     }
     
-    console.log(`🕐 Intervalle de vérification: ${interval/1000}s (isDrawTime: ${isDrawTime}, waitingForDraw: ${waitingForDraw}, isInPostDrawPeriod: ${isInPostDrawPeriod})`)
+    console.log(`🕐 Intervalle de vérification: ${interval}ms (isDrawTime: ${isDrawTime}, waitingForDraw: ${waitingForDraw}, isInPostDrawPeriod: ${isInPostDrawPeriod})`)
     
     const intervalId = setInterval(fetchData, interval)
     
