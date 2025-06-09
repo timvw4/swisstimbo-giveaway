@@ -38,6 +38,7 @@ interface PostDrawState {
   frozenParticipants: Participant[]
   winner: Participant
   endTime: number // timestamp de fin de la période de 5 minutes
+  lastProcessedWinnerId: string // ID du dernier gagnant traité pour éviter les re-animations
 }
 
 export default function Tirage() {
@@ -77,7 +78,7 @@ export default function Tirage() {
             setIsInPostDrawPeriod(true)
             setIsSaved(true)
             setShowWinnerMessage(true)
-            setLastCheckedWinner(state.winner.id)
+            setLastCheckedWinner(state.lastProcessedWinnerId || state.winner.id)
             
             // 🔧 NOUVEAU : Ne PAS relancer d'animation, directement afficher le gagnant
             setIsSpinning(false) // S'assurer que l'animation n'est pas active
@@ -109,7 +110,8 @@ export default function Tirage() {
       const state: PostDrawState = {
         frozenParticipants: participants,
         winner,
-        endTime
+        endTime,
+        lastProcessedWinnerId: winner.id
       }
       localStorage.setItem('postDrawState', JSON.stringify(state))
     }
@@ -286,7 +288,7 @@ export default function Tirage() {
         if (!recentWinner) {
           console.log('📭 Aucun gagnant récent trouvé')
         } else if (recentWinner.id === lastCheckedWinner) {
-          console.log('🔄 Gagnant déjà traité, pas de changement')
+          console.log(`🔄 Gagnant déjà traité (ID: ${recentWinner.id}), pas de re-animation`)
         } else if (isInPostDrawPeriod) {
           console.log('🏠 Déjà en période post-tirage, ignore le nouveau check')
         }
