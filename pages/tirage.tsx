@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import Layout from '@/components/Layout'
 import { supabase } from '@/lib/supabaseClient'
 import dynamic from 'next/dynamic'
@@ -134,46 +134,8 @@ export default function Tirage() {
     }
   }, [])
 
-  // 🔧 NOUVEAU : Setup de la subscription Realtime
-  useEffect(() => {
-    console.log('🚀 Initialisation de la subscription Realtime pour les tirages...')
-    
-    const subscription = supabase
-      .channel('winners-realtime')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'winners'
-        },
-        (payload) => {
-          console.log('🎉 NOUVEAU TIRAGE DÉTECTÉ EN TEMPS RÉEL !', payload.new)
-          
-          // Traiter immédiatement le nouveau tirage
-          handleRealtimeWinner(payload.new)
-        }
-      )
-      .subscribe((status) => {
-        console.log('📡 Status subscription Realtime:', status)
-        if (status === 'SUBSCRIBED') {
-          console.log('✅ Subscription active - Prêt pour les tirages en temps réel !')
-        }
-      })
-
-    setRealtimeSubscription(subscription)
-
-    // Cleanup de la subscription
-    return () => {
-      console.log('🔌 Fermeture de la subscription Realtime')
-      if (subscription) {
-        subscription.unsubscribe()
-      }
-    }
-  }, [])
-
-  // 🔧 NOUVEAU : Fonction pour traiter un gagnant en temps réel
-  const handleRealtimeWinner = async (winnerData: any) => {
+  // 🔧 NOUVEAU : Fonction pour traiter un gagnant en temps réel avec useCallback
+  const handleRealtimeWinner = useCallback(async (winnerData: any) => {
     console.log('⚡ Traitement temps réel du gagnant:', winnerData)
     
     // Vérifier si ce gagnant n'a pas déjà été traité
@@ -198,6 +160,8 @@ export default function Tirage() {
     }
     
     console.log('✅ Tirage récent, utilisation des participants sauvegardés...')
+    console.log(`🔍 Participants actuels dans state: ${participants.length}`)
+    console.log(`🔍 Participants sauvegardés: ${participantsAtDrawTime.length}`)
     
     // 🔧 SOLUTION PARFAITE : Utiliser les participants sauvegardés au moment du tirage
     const allParticipants = participantsAtDrawTime.length > 0 ? participantsAtDrawTime : participants
@@ -253,8 +217,10 @@ export default function Tirage() {
       }
     } else {
       console.log('❌ Aucun participant trouvé pour l\'animation')
+      console.log('❌ Debug: participants state:', participants)
+      console.log('❌ Debug: participantsAtDrawTime state:', participantsAtDrawTime)
     }
-  }
+  }, [participants, participantsAtDrawTime, lastCheckedWinner, isInPostDrawPeriod])
 
   // 🔧 NOUVEAU : Fonction commune pour terminer l'animation
   const completeDrawAnimation = (winner: Participant, participants: any[], drawDate: string, drawTimestamp: number) => {
@@ -438,6 +404,44 @@ export default function Tirage() {
   }, [isInPostDrawPeriod])
 
   const displayedParticipants = (isInPostDrawPeriod || isSpinning) ? frozenParticipants : participants
+
+  // 🔧 NOUVEAU : Setup de la subscription Realtime
+  useEffect(() => {
+    console.log('🚀 Initialisation de la subscription Realtime pour les tirages...')
+    
+    const subscription = supabase
+      .channel('winners-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'winners'
+        },
+        (payload) => {
+          console.log('🎉 NOUVEAU TIRAGE DÉTECTÉ EN TEMPS RÉEL !', payload.new)
+          
+          // Traiter immédiatement le nouveau tirage
+          handleRealtimeWinner(payload.new)
+        }
+      )
+      .subscribe((status) => {
+        console.log('📡 Status subscription Realtime:', status)
+        if (status === 'SUBSCRIBED') {
+          console.log('✅ Subscription active - Prêt pour les tirages en temps réel !')
+        }
+      })
+
+    setRealtimeSubscription(subscription)
+
+    // Cleanup de la subscription
+    return () => {
+      console.log('🔌 Fermeture de la subscription Realtime')
+      if (subscription) {
+        subscription.unsubscribe()
+      }
+    }
+  }, [handleRealtimeWinner]) // 🔧 CORRECTION : Dépendre seulement de la fonction
 
   return (
     <Layout>
