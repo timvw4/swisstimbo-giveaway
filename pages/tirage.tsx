@@ -220,73 +220,42 @@ export default function Tirage() {
             created_at: recentWinner.draw_date
           }
 
-          // 🔧 NOUVELLE STRATÉGIE : Synchronisation absolue sur timestamp de fin
+          // 🔧 NOUVELLE STRATÉGIE : Animation garantie + synchronisation intelligente
           const animationDuration = 10000 // 10 secondes d'animation FIXE
-          const animationEndTime = drawTime + animationDuration // Heure absolue de fin
+          const minimumAnimation = 6000 // 6 secondes minimum même si détection tardive
+          const animationEndTime = drawTime + animationDuration // Heure absolue de fin "idéale"
           const now = Date.now()
           const remainingAnimationTime = animationEndTime - now
           
-          console.log(`🕐 Calcul synchronisation absolue:`)
+          console.log(`🕐 Calcul synchronisation intelligente:`)
           console.log(`  - Heure du tirage: ${new Date(drawTime).toLocaleTimeString()}`)
-          console.log(`  - Fin animation prévue: ${new Date(animationEndTime).toLocaleTimeString()}`)
+          console.log(`  - Fin animation idéale: ${new Date(animationEndTime).toLocaleTimeString()}`)
           console.log(`  - Maintenant: ${new Date(now).toLocaleTimeString()}`)
-          console.log(`  - Temps restant pour animation: ${Math.round(remainingAnimationTime / 1000)}s`)
+          console.log(`  - Temps théorique restant: ${Math.round(remainingAnimationTime / 1000)}s`)
           
-          if (remainingAnimationTime > 0) {
-            // L'animation doit encore se jouer
-            console.log(`🎲 ANIMATION SYNCHRONISÉE - Temps restant: ${Math.round(remainingAnimationTime / 1000)}s`)
-            
-            setIsSpinning(true)
-            setWaitingForDraw(false)
-            setLastCheckedWinner(recentWinner.id)
-            
-            setTimeout(() => {
-              console.log('🏆 ANIMATION TERMINÉE (synchronisée) - Affichage du gagnant')
-              setWinner(winnerData)
-              setIsSpinning(false)
-              setShowWinnerMessage(true)
-              setIsSaved(true)
-              setIsInPostDrawPeriod(true)
-
-              // Sauvegarder l'état
-              savePostDrawState(historicalParticipants.map(p => ({
-                id: p.id,
-                pseudoinstagram: p.pseudoinstagram,
-                npa: p.npa,
-                created_at: p.created_at
-              })), winnerData, recentWinner.draw_date)
-
-              // Programmer le nettoyage basé sur l'heure réelle du tirage
-              const fiveMinutesFromDraw = drawTime + fiveMinutes
-              const remainingDisplayTime = fiveMinutesFromDraw - Date.now()
-              
-              console.log(`🧹 Nettoyage programmé dans ${Math.round(remainingDisplayTime / 1000)}s`)
-              
-              if (remainingDisplayTime > 0) {
-                setTimeout(() => {
-                  console.log('🧹 Nettoyage automatique de l\'état post-tirage')
-                  clearPostDrawState()
-                }, remainingDisplayTime)
-              }
-            }, remainingAnimationTime)
+          // 🔧 AMÉLIORATION : Forcer animation même si détection tardive
+          let finalAnimationTime
+          if (remainingAnimationTime > 1000) {
+            // Animation encore en cours selon le timing idéal
+            finalAnimationTime = remainingAnimationTime
+            console.log(`🎲 ANIMATION SYNCHRONISÉE - Temps restant: ${Math.round(finalAnimationTime / 1000)}s`)
           } else {
-            // Animation déjà terminée, afficher directement
-            console.log('🏆 AFFICHAGE DIRECT DU GAGNANT (animation déjà terminée)')
+            // Détection tardive : forcer une animation minimum pour l'expérience utilisateur
+            finalAnimationTime = minimumAnimation
+            console.log(`🎲 ANIMATION FORCÉE (détection tardive) - Durée garantie: ${Math.round(finalAnimationTime / 1000)}s`)
+          }
+          
+          setIsSpinning(true)
+          setWaitingForDraw(false)
+          setLastCheckedWinner(recentWinner.id)
+          
+          setTimeout(() => {
+            console.log('🏆 ANIMATION TERMINÉE - Affichage du gagnant')
             setWinner(winnerData)
             setIsSpinning(false)
             setShowWinnerMessage(true)
             setIsSaved(true)
             setIsInPostDrawPeriod(true)
-            setLastCheckedWinner(recentWinner.id)
-            setWaitingForDraw(false)
-
-            // Mettre à jour la liste des gagnants précédents
-            setPreviousWinners(prev => {
-              if (!prev.includes(recentWinner.pseudoinstagram)) {
-                return [...prev, recentWinner.pseudoinstagram]
-              }
-              return prev
-            })
 
             // Sauvegarder l'état
             savePostDrawState(historicalParticipants.map(p => ({
@@ -296,18 +265,19 @@ export default function Tirage() {
               created_at: p.created_at
             })), winnerData, recentWinner.draw_date)
 
-            // Programmer le nettoyage si nécessaire
-            const remainingDisplayTime = fiveMinutes - timeSinceDraw
+            // Programmer le nettoyage basé sur l'heure réelle du tirage
+            const fiveMinutesFromDraw = drawTime + fiveMinutes
+            const remainingDisplayTime = fiveMinutesFromDraw - Date.now()
+            
+            console.log(`🧹 Nettoyage programmé dans ${Math.round(remainingDisplayTime / 1000)}s`)
+            
             if (remainingDisplayTime > 0) {
               setTimeout(() => {
-                console.log('🧹 Nettoyage de l\'état post-tirage')
+                console.log('🧹 Nettoyage automatique de l\'état post-tirage')
                 clearPostDrawState()
               }, remainingDisplayTime)
-            } else {
-              console.log('⏰ Temps d\'affichage déjà écoulé, nettoyage immédiat')
-              clearPostDrawState()
             }
-          }
+          }, finalAnimationTime)
         } else {
           console.log('⚠️ Aucun participant historique trouvé pour ce tirage')
         }
