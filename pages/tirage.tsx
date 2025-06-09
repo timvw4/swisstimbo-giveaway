@@ -139,18 +139,23 @@ export default function Tirage() {
       const recentTime = new Date()
       recentTime.setMinutes(recentTime.getMinutes() - 15)
 
+      // 🔧 CORRECTION MAJEURE : Utiliser .maybeSingle() au lieu de .single() pour éviter l'erreur 406
       const { data: recentWinner, error } = await supabase
         .from('winners')
         .select('*')
         .gte('draw_date', recentTime.toISOString())
         .order('draw_date', { ascending: false })
         .limit(1)
-        .single()
+        .maybeSingle() // ✅ CORRIGÉ : maybeSingle permet 0 ou 1 ligne sans erreur
 
       if (error) {
-        if (!error.message.includes('PGRST116')) {
-          console.error('❌ Erreur lors de la vérification:', error)
-        }
+        console.error('❌ Erreur lors de la vérification:', error)
+        return
+      }
+
+      // Si pas de gagnant récent, c'est normal, pas d'erreur
+      if (!recentWinner) {
+        console.log('📭 Aucun gagnant récent trouvé dans les 15 dernières minutes')
         return
       }
 

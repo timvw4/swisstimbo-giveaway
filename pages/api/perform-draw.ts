@@ -46,11 +46,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const recentCheck = new Date()
     recentCheck.setMinutes(recentCheck.getMinutes() - 30)
 
+    // 🔧 CORRECTION : Utiliser .maybeSingle() pour éviter l'erreur 406
     const { data: recentWinner } = await supabase
       .from('winners')
       .select('*')
       .gte('draw_date', recentCheck.toISOString())
-      .single()
+      .maybeSingle() // ✅ CORRIGÉ : maybeSingle permet 0 ou 1 ligne sans erreur
 
     if (recentWinner) {
       console.log('[PERFORM DRAW] Tirage très récent détecté (moins de 30min), annulation')
@@ -86,7 +87,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       console.log(`[PERFORM DRAW] Tirage tenté en dehors des heures autorisées`)
       console.log(`[PERFORM DRAW] Jour actuel: ${dayOfWeek} (0=dimanche, 3=mercredi)`)
       console.log(`[PERFORM DRAW] Heure actuelle: ${currentHour}h${currentMinutes.toString().padStart(2, '0')}`)
-      console.log('[PERFORM DRAW] Tirages autorisés: Dimanche et Mercredi à 20h00-20h02 UNIQUEMENT')
+      console.log('[PERFORM DRAW] Tirages autorisés: Dimanche et Mercredi à 20h00-20h01 UNIQUEMENT')
       
       // En mode développement, permettre quand même le tirage
       if (process.env.NODE_ENV !== 'development') {

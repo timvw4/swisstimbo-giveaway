@@ -53,7 +53,7 @@ export default function Maintenance() {
         {/* Estimation de retour */}
         <div className="bg-dollar-green/5 border border-dollar-green/20 rounded-lg p-4 mb-6">
           <p className="text-sm text-gray-700">
-            <strong>Retour estimé :</strong> Dans quelques minutes
+            <strong>Retour estimé :</strong> Dans quelques heures
           </p>
         </div>
 
