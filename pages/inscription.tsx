@@ -98,9 +98,9 @@ export default function Inscription() {
         .from('participants')
         .select('pseudoinstagram')
         .eq('pseudoinstagram', formattedPseudo)
-        .single()
+        .maybeSingle()
 
-      if (checkError && checkError.code !== 'PGRST116') {
+      if (checkError) {
         console.error('Erreur lors de la vérification:', checkError)
         setError('Erreur lors de la vérification du pseudo')
         setLoading(false)
