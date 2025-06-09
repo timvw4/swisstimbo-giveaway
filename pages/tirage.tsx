@@ -58,6 +58,8 @@ export default function Tirage() {
   const [waitingForDraw, setWaitingForDraw] = useState(false)
   // 🔧 NOUVEAU : État pour la subscription Realtime
   const [realtimeSubscription, setRealtimeSubscription] = useState<any>(null)
+  // 🔧 NOUVEAU : Sauvegarder les participants avant le tirage pour l'animation
+  const [participantsAtDrawTime, setParticipantsAtDrawTime] = useState<Participant[]>([])
   const router = useRouter()
   
   useEffect(() => {
@@ -195,19 +197,17 @@ export default function Tirage() {
       return
     }
     
-    console.log('✅ Tirage récent, récupération des participants...')
+    console.log('✅ Tirage récent, utilisation des participants sauvegardés...')
     
-    // 🔧 CORRECTION MAJEURE : Utiliser les participants actuels au lieu des participants_history
-    // Les participants actuels représentent TOUS ceux qui étaient présents au moment du tirage
-    // Car ils sont supprimés SEULEMENT APRÈS le tirage dans perform-draw.ts
-    const currentParticipants = participants // Utiliser l'état actuel des participants
+    // 🔧 SOLUTION PARFAITE : Utiliser les participants sauvegardés au moment du tirage
+    const allParticipants = participantsAtDrawTime.length > 0 ? participantsAtDrawTime : participants
     
-    if (currentParticipants && currentParticipants.length > 0) {
-      console.log(`📊 Participants au moment du tirage récupérés: ${currentParticipants.length}`)
-      console.log('👥 Participants:', currentParticipants.map(p => p.pseudoinstagram))
+    if (allParticipants && allParticipants.length > 0) {
+      console.log(`📊 Participants pour l'animation: ${allParticipants.length}`)
+      console.log('👥 Participants:', allParticipants.map(p => p.pseudoinstagram))
       
-      // Utiliser les participants actuels comme participants figés
-      setFrozenParticipants([...currentParticipants])
+      // Utiliser tous les participants pour l'animation
+      setFrozenParticipants([...allParticipants])
 
       // Créer l'objet gagnant
       const winner = {
@@ -245,14 +245,14 @@ export default function Tirage() {
         // Lancer l'animation synchronisée
         setTimeout(() => {
           console.log('🏆 ANIMATION TERMINÉE - Affichage du gagnant (Realtime)')
-          completeDrawAnimation(winner, currentParticipants, winnerData.draw_date, drawTime)
+          completeDrawAnimation(winner, allParticipants, winnerData.draw_date, drawTime)
         }, finalAnimationTime)
       } else {
         // Affichage direct
-        completeDrawAnimation(winner, currentParticipants, winnerData.draw_date, drawTime)
+        completeDrawAnimation(winner, allParticipants, winnerData.draw_date, drawTime)
       }
     } else {
-      console.log('❌ Aucun participant trouvé au moment du tirage')
+      console.log('❌ Aucun participant trouvé pour l\'animation')
     }
   }
 
@@ -317,6 +317,8 @@ export default function Tirage() {
     setShowWinnerMessage(false)
     setIsInPostDrawPeriod(false)
     setWaitingForDraw(false)
+    // 🔧 NOUVEAU : Réinitialiser aussi la sauvegarde des participants
+    setParticipantsAtDrawTime([])
   }
 
   // 🔧 CORRIGÉ : Fonction appelée quand le décompte arrive à zéro
@@ -324,6 +326,10 @@ export default function Tirage() {
     console.log('⏰ COUNTDOWN TERMINÉ ! Activation du mode vérification...')
     setCountdownCompleted(true)
     setWaitingForDraw(true)
+    
+    // 🔧 NOUVEAU : Sauvegarder les participants actuels pour l'animation
+    console.log(`🎬 Sauvegarde des participants pour l'animation: ${participants.length}`)
+    setParticipantsAtDrawTime([...participants])
     
     console.log('🚀 Mode attente activé - Les tirages seront détectés en temps réel via Realtime !')
     
@@ -346,6 +352,10 @@ export default function Tirage() {
       alert('Aucun participant pour tester le tirage !')
       return
     }
+
+    // 🔧 NOUVEAU : Sauvegarder les participants avant le test
+    console.log(`🎬 Sauvegarde des participants pour le test: ${participants.length}`)
+    setParticipantsAtDrawTime([...participants])
 
     setWaitingForDraw(true)
     console.log('🚀 Activation mode attente pour le test...')
