@@ -60,10 +60,19 @@ export default function Tirage() {
   const [realtimeSubscription, setRealtimeSubscription] = useState<any>(null)
   // 🔧 NOUVEAU : Sauvegarder les participants avant le tirage pour l'animation
   const [participantsAtDrawTime, setParticipantsAtDrawTime] = useState<Participant[]>([])
+  // 🔧 NOUVEAU : Détection mobile et fallback
+  const [isMobile, setIsMobile] = useState(false)
+  const [lastCheckedWinnerTime, setLastCheckedWinnerTime] = useState<number>(Date.now())
   const router = useRouter()
   
   useEffect(() => {
     setIsClient(true)
+    
+    // 🔧 NOUVEAU : Détecter si on est sur mobile
+    const userAgent = navigator.userAgent
+    const mobileDetected = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent)
+    setIsMobile(mobileDetected)
+    console.log('📱 Appareil détecté:', mobileDetected ? 'Mobile' : 'Desktop')
     
     // 🔧 AMÉLIORATION : Vérifier s'il y a un état post-tirage persisté avec validation timestamp
     if (typeof window !== 'undefined') {
@@ -323,6 +332,9 @@ export default function Tirage() {
     console.log(`🎬 Sauvegarde des participants pour le test: ${participants.length}`)
     setParticipantsAtDrawTime([...participants])
 
+    // 🔧 NOUVEAU : Réinitialiser le timestamp pour le fallback mobile
+    setLastCheckedWinnerTime(Date.now())
+
     setWaitingForDraw(true)
     console.log('🚀 Activation mode attente pour le test...')
 
@@ -340,6 +352,7 @@ export default function Tirage() {
       if (result.success) {
         console.log('🧪 TEST : Tirage automatique réussi !', result.winner)
         console.log('📡 Le tirage sera détecté automatiquement via Realtime...')
+        console.log('📱 Fallback mobile actif:', isMobile)
         
         // Realtime va détecter le nouveau tirage automatiquement
         // Pas besoin d'action supplémentaire
@@ -394,20 +407,66 @@ export default function Tirage() {
       }
     }
     
+    // 🔧 NOUVEAU : Fonction de fallback pour vérifier les nouveaux gagnants (mobile)
+    const checkForNewWinners = async () => {
+      if (!waitingForDraw || !isMobile) return
+      
+      try {
+        console.log('📱 FALLBACK MOBILE : Vérification nouveaux gagnants...')
+        const { data: recentWinners, error } = await supabase
+          .from('winners')
+          .select('*')
+          .gte('draw_date', new Date(lastCheckedWinnerTime).toISOString())
+          .order('draw_date', { ascending: false })
+        
+        if (error) {
+          console.error('📱 ERREUR FALLBACK:', error)
+          return
+        }
+        
+        if (recentWinners && recentWinners.length > 0) {
+          const latestWinner = recentWinners[0]
+          console.log('📱 FALLBACK : Nouveau gagnant détecté !', latestWinner)
+          handleRealtimeWinner(latestWinner)
+          setLastCheckedWinnerTime(Date.now())
+        }
+      } catch (err) {
+        console.error('📱 ERREUR FALLBACK:', err)
+      }
+    }
+    
     // Chargement initial
     fetchInitialData()
     
-    // 🔧 SIMPLIFIÉ : Mise à jour moins fréquente car Realtime gère les tirages
-    const interval = setInterval(fetchInitialData, isInPostDrawPeriod ? 10000 : 30000)
+    // 🔧 NOUVEAU : Polling pour mobile + mise à jour normale
+    const normalInterval = setInterval(fetchInitialData, isInPostDrawPeriod ? 10000 : 30000)
     
-    return () => clearInterval(interval)
-  }, [isInPostDrawPeriod])
+    // 🔧 NOUVEAU : Polling fallback pour mobile uniquement
+    const mobileInterval = isMobile && waitingForDraw 
+      ? setInterval(checkForNewWinners, 2000) // Vérifie toutes les 2 secondes sur mobile
+      : null
+    
+    console.log('📱 Polling actif:', {
+      mobile: isMobile,
+      waiting: waitingForDraw,
+      fallback: !!mobileInterval
+    })
+    
+    return () => {
+      clearInterval(normalInterval)
+      if (mobileInterval) {
+        clearInterval(mobileInterval)
+      }
+    }
+  }, [isInPostDrawPeriod, isMobile, waitingForDraw, lastCheckedWinnerTime, handleRealtimeWinner])
 
   const displayedParticipants = (isInPostDrawPeriod || isSpinning) ? frozenParticipants : participants
 
   // 🔧 NOUVEAU : Setup de la subscription Realtime
   useEffect(() => {
     console.log('🚀 Initialisation de la subscription Realtime pour les tirages...')
+    console.log('📱 User Agent:', navigator.userAgent)
+    console.log('📱 Is Mobile:', /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent))
     
     const subscription = supabase
       .channel('winners-realtime')
@@ -420,6 +479,7 @@ export default function Tirage() {
         },
         (payload) => {
           console.log('🎉 NOUVEAU TIRAGE DÉTECTÉ EN TEMPS RÉEL !', payload.new)
+          console.log('📱 Traitement sur appareil:', /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop')
           
           // Traiter immédiatement le nouveau tirage
           handleRealtimeWinner(payload.new)
@@ -427,6 +487,7 @@ export default function Tirage() {
       )
       .subscribe((status) => {
         console.log('📡 Status subscription Realtime:', status)
+        console.log('📱 Sur appareil:', /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop')
         if (status === 'SUBSCRIBED') {
           console.log('✅ Subscription active - Prêt pour les tirages en temps réel !')
         }

@@ -134,8 +134,8 @@ const PixelGrid: React.FC<PixelGridProps> = ({
             )}
 
             <div className="flex items-center justify-center space-x-1">
-              {/* Afficher la couronne Lucide si le participant a déjà gagné */}
-              {hasWonBefore(participant.pseudoinstagram) && (
+              {/* Afficher la couronne Lucide si le participant a déjà gagné ET que l'animation n'est pas en cours */}
+              {!isSpinning && hasWonBefore(participant.pseudoinstagram) && (
                 <Crown 
                   size={12} 
                   className="text-yellow-500 flex-shrink-0" 
