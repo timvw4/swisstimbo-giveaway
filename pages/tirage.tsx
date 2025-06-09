@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react'
+import React, { useEffect, useState, useCallback, useRef } from 'react'
 import Layout from '@/components/Layout'
 import { supabase } from '@/lib/supabaseClient'
 import dynamic from 'next/dynamic'
@@ -63,6 +63,20 @@ export default function Tirage() {
   // 🔧 NOUVEAU : Détection mobile et fallback
   const [isMobile, setIsMobile] = useState(false)
   const [lastCheckedWinnerTime, setLastCheckedWinnerTime] = useState<number>(Date.now())
+  
+  // 🔧 NOUVEAU : Refs pour accéder aux valeurs actuelles sans dépendances circulaires
+  const participantsRef = useRef<Participant[]>([])
+  const participantsAtDrawTimeRef = useRef<Participant[]>([])
+  
+  // 🔧 NOUVEAU : Mettre à jour les refs quand les states changent
+  useEffect(() => {
+    participantsRef.current = participants
+  }, [participants])
+  
+  useEffect(() => {
+    participantsAtDrawTimeRef.current = participantsAtDrawTime
+  }, [participantsAtDrawTime])
+  
   const router = useRouter()
   
   useEffect(() => {
@@ -155,11 +169,18 @@ export default function Tirage() {
     
     console.log('✅ Nouveau tirage détecté, préparation de l\'animation...')
     
-    // 🔧 SOLUTION SIMPLE : Utiliser les participants sauvegardés ou actuels
-    const allParticipants = participantsAtDrawTime.length > 0 ? participantsAtDrawTime : participants
+    // 🔧 SOLUTION AVEC REFS : Utiliser les valeurs actuelles via les refs
+    const currentParticipants = participantsRef.current
+    const currentParticipantsAtDrawTime = participantsAtDrawTimeRef.current
+    
+    console.log(`🔍 Participants actuels: ${currentParticipants.length}`)
+    console.log(`🔍 Participants sauvegardés: ${currentParticipantsAtDrawTime.length}`)
+    
+    const allParticipants = currentParticipantsAtDrawTime.length > 0 ? currentParticipantsAtDrawTime : currentParticipants
     
     if (allParticipants && allParticipants.length > 0) {
       console.log(`📊 Animation avec ${allParticipants.length} participants`)
+      console.log('👥 Participants:', allParticipants.map(p => p.pseudoinstagram))
       
       // Utiliser tous les participants pour l'animation
       setFrozenParticipants([...allParticipants])
@@ -190,6 +211,8 @@ export default function Tirage() {
       
     } else {
       console.log('❌ Aucun participant pour l\'animation')
+      console.log('❌ Debug participants actuels:', currentParticipants.length)
+      console.log('❌ Debug participants sauvegardés:', currentParticipantsAtDrawTime.length)
     }
   }, [lastCheckedWinner, isInPostDrawPeriod]) // 🔧 RÉDUIT : Seulement les dépendances essentielles
 
