@@ -469,7 +469,7 @@ export default function Tirage() {
     return () => clearInterval(intervalId)
   }, [isInPostDrawPeriod, lastCheckedWinner, waitingForDraw])
 
-  const displayedParticipants = isInPostDrawPeriod ? frozenParticipants : participants
+  const displayedParticipants = (isInPostDrawPeriod || isSpinning) ? frozenParticipants : participants
 
   return (
     <Layout>
