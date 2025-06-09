@@ -146,10 +146,13 @@ export default function Tirage() {
   // 🔧 NOUVEAU : Fonction pour traiter un gagnant en temps réel avec useCallback
   const handleRealtimeWinner = useCallback(async (winnerData: any) => {
     console.log('⚡ Traitement temps réel du gagnant:', winnerData)
+    console.log('📱 Sur appareil:', isMobile ? 'Mobile' : 'Desktop')
     
     // Vérifier si ce gagnant n'a pas déjà été traité
     if (winnerData.id === lastCheckedWinner || isInPostDrawPeriod) {
       console.log('🔄 Gagnant déjà traité ou en période post-tirage, ignoré')
+      console.log('🔄 Debug - lastCheckedWinner:', lastCheckedWinner)
+      console.log('🔄 Debug - isInPostDrawPeriod:', isInPostDrawPeriod)
       return
     }
     
@@ -162,9 +165,13 @@ export default function Tirage() {
     console.log(`⏰ Tirage: ${new Date(drawTime).toLocaleTimeString()}`)
     console.log(`⏰ Maintenant: ${new Date(now).toLocaleTimeString()}`)
     console.log(`⌛ Temps écoulé: ${Math.round(timeSinceDraw / 1000)}s`)
+    console.log(`⌛ Limite: ${Math.round(fiveMinutes / 1000)}s`)
     
-    if (timeSinceDraw > fiveMinutes) {
-      console.log('⏰ Tirage trop ancien (plus de 5 minutes), ignoré')
+    // 🔧 CORRECTION : Être plus tolérant sur le timing, surtout pour mobile
+    const timeLimit = isMobile ? 10 * 60 * 1000 : 5 * 60 * 1000 // 10 min sur mobile, 5 min sur desktop
+    
+    if (timeSinceDraw > timeLimit) {
+      console.log(`⏰ Tirage trop ancien (plus de ${Math.round(timeLimit / 60 / 1000)} minutes), ignoré`)
       return
     }
     
@@ -190,7 +197,7 @@ export default function Tirage() {
         created_at: winnerData.draw_date
       }
 
-      // 🔧 AMÉLIORATION : Synchronisation PARFAITE basée sur l'heure du tirage
+      // 🔧 CORRECTION : Synchronisation plus flexible pour mobile
       const animationDuration = 10000 // 10 secondes FIXE
       const animationEndTime = drawTime + animationDuration
       const remainingAnimation = animationEndTime - now
@@ -200,27 +207,36 @@ export default function Tirage() {
       console.log(`  - Temps restant: ${Math.round(remainingAnimation / 1000)}s`)
       
       let finalAnimationTime
+      // 🔧 CORRECTION : Sur mobile, toujours faire une mini-animation même si "en retard"
       if (remainingAnimation > 1000) {
         // Animation encore en cours
         finalAnimationTime = remainingAnimation
         console.log(`🎲 SYNCHRONISATION PARFAITE - ${Math.round(finalAnimationTime / 1000)}s restantes`)
+      } else if (isMobile && remainingAnimation > -30000) {
+        // Sur mobile, faire une animation de 3 secondes même si "en retard" (jusqu'à 30s de retard)
+        finalAnimationTime = 3000
+        console.log(`📱 MOBILE : Animation de rattrapage - 3s`)
       } else {
         // Animation devrait être terminée, affichage direct
         finalAnimationTime = 0
         console.log(`🏆 Animation devrait être terminée, affichage direct du gagnant`)
       }
       
+      console.log(`🎬 Temps d'animation final: ${finalAnimationTime}ms`)
+      
       setIsSpinning(finalAnimationTime > 0)
       setWaitingForDraw(false)
       setLastCheckedWinner(winnerData.id)
       
       if (finalAnimationTime > 0) {
+        console.log(`🎲 LANCEMENT ANIMATION pour ${finalAnimationTime}ms`)
         // Lancer l'animation synchronisée
         setTimeout(() => {
           console.log('🏆 ANIMATION TERMINÉE - Affichage du gagnant (Realtime)')
           completeDrawAnimation(winner, allParticipants, winnerData.draw_date, drawTime)
         }, finalAnimationTime)
       } else {
+        console.log('🏆 AFFICHAGE DIRECT du gagnant')
         // Affichage direct
         completeDrawAnimation(winner, allParticipants, winnerData.draw_date, drawTime)
       }
@@ -229,23 +245,39 @@ export default function Tirage() {
       console.log('❌ Debug: participants state:', participants)
       console.log('❌ Debug: participantsAtDrawTime state:', participantsAtDrawTime)
     }
-  }, [participants, participantsAtDrawTime, lastCheckedWinner, isInPostDrawPeriod])
+  }, [participants, participantsAtDrawTime, lastCheckedWinner, isInPostDrawPeriod, isMobile])
 
   // 🔧 NOUVEAU : Fonction commune pour terminer l'animation
   const completeDrawAnimation = (winner: Participant, participants: any[], drawDate: string, drawTimestamp: number) => {
+    console.log('🏆 DÉBUT completeDrawAnimation')
+    console.log('🏆 Winner:', winner)
+    console.log('🏆 Participants count:', participants.length)
+    console.log('🏆 Sur appareil:', isMobile ? 'Mobile' : 'Desktop')
+    
     setWinner(winner)
     setIsSpinning(false)
     setShowWinnerMessage(true)
     setIsSaved(true)
     setIsInPostDrawPeriod(true)
 
+    console.log('🏆 États mis à jour')
+
     // Sauvegarder l'état avec animation terminée
-    savePostDrawState(participants.map(p => ({
+    const mappedParticipants = participants.map(p => ({
       id: p.id,
       pseudoinstagram: p.pseudoinstagram,
       npa: p.npa,
       created_at: p.created_at
-    })), winner, drawDate, drawTimestamp, true)
+    }))
+    
+    console.log('🏆 Participants mappés:', mappedParticipants.length)
+    
+    try {
+      savePostDrawState(mappedParticipants, winner, drawDate, drawTimestamp, true)
+      console.log('🏆 ✅ État sauvegardé avec succès')
+    } catch (error) {
+      console.error('🏆 ❌ Erreur sauvegarde état:', error)
+    }
 
     // Programmer le nettoyage
     const fiveMinutesFromDraw = drawTimestamp + (5 * 60 * 1000)
@@ -258,11 +290,19 @@ export default function Tirage() {
         console.log('🧹 Nettoyage automatique de l\'état post-tirage')
         clearPostDrawState()
       }, remainingDisplayTime)
+    } else {
+      console.log('🧹 ⚠️ Temps de nettoyage déjà dépassé')
     }
+    
+    console.log('🏆 FIN completeDrawAnimation')
   }
 
   // 🔧 AMÉLIORÉ : Fonction pour sauvegarder l'état post-tirage
   const savePostDrawState = (participants: Participant[], winner: Participant, drawDate: string, drawTimestamp?: number, animationCompleted: boolean = false) => {
+    console.log('💾 DÉBUT savePostDrawState')
+    console.log('💾 Sur appareil:', isMobile ? 'Mobile' : 'Desktop')
+    console.log('💾 Animation completed:', animationCompleted)
+    
     if (typeof window !== 'undefined') {
       const timestamp = drawTimestamp || new Date(drawDate).getTime()
       const endTime = timestamp + (5 * 60 * 1000) // 5 minutes à partir du tirage
@@ -274,9 +314,34 @@ export default function Tirage() {
         drawTimestamp: timestamp,
         animationCompleted
       }
-      localStorage.setItem('postDrawState', JSON.stringify(state))
-      console.log('💾 État post-tirage sauvegardé avec animation:', animationCompleted)
+      
+      console.log('💾 État à sauvegarder:', {
+        participantsCount: participants.length,
+        winnerId: winner.id,
+        winnerPseudo: winner.pseudoinstagram,
+        endTime: new Date(endTime).toLocaleTimeString(),
+        animationCompleted
+      })
+      
+      try {
+        localStorage.setItem('postDrawState', JSON.stringify(state))
+        console.log('💾 ✅ État sauvegardé dans localStorage avec succès')
+        
+        // Vérifier que la sauvegarde a bien fonctionné
+        const verification = localStorage.getItem('postDrawState')
+        if (verification) {
+          console.log('💾 ✅ Vérification localStorage OK')
+        } else {
+          console.error('💾 ❌ Vérification localStorage ÉCHEC')
+        }
+      } catch (error) {
+        console.error('💾 ❌ Erreur localStorage:', error)
+      }
+    } else {
+      console.log('💾 ⚠️ Window undefined - côté serveur')
     }
+    
+    console.log('💾 FIN savePostDrawState')
   }
 
   // Fonction pour nettoyer l'état post-tirage
