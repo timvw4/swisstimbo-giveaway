@@ -17,8 +17,8 @@ export default function Inscription() {
   const [placesDisponibles, setPlacesDisponibles] = useState<number | null>(null)
 
   const handlePseudoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Supprime les espaces et le @ s'il est entré manuellement
-    const value = e.target.value.replace(/\s+/g, '').replace('@', '')
+    // Supprime les espaces et le @ s'il est entré manuellement, puis convertit en minuscules
+    const value = e.target.value.replace(/\s+/g, '').replace('@', '').toLowerCase()
     setFormData({...formData, pseudoInstagram: value})
   }
 
@@ -90,8 +90,8 @@ export default function Inscription() {
 
       // Formater le pseudo Instagram
       const formattedPseudo = formData.pseudoInstagram.startsWith('@') 
-        ? formData.pseudoInstagram 
-        : '@' + formData.pseudoInstagram
+        ? formData.pseudoInstagram.toLowerCase() 
+        : '@' + formData.pseudoInstagram.toLowerCase()
 
       // Vérifier si le pseudo existe déjà
       const { data: existingUser, error: checkError } = await supabase

@@ -130,54 +130,61 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     console.log(`[PERFORM DRAW] Gagnant sauvegardé avec l'ID: ${winnerData.id}`)
 
-    // 🔧 AMÉLIORATION : Éviter les doublons de manière plus précise
+    // 🔧 CORRECTION MAJEURE : Éviter les vrais doublons basés uniquement sur le pseudoinstagram
     const { data: existingHistory } = await supabase
       .from('participants_history')
-      .select('pseudoinstagram, npa, created_at')
+      .select('pseudoinstagram')
 
-    // Créer une clé unique pour chaque participant (pseudo + npa + date inscription)
-    const existingKeys = new Set(
-      existingHistory?.map(entry => 
-        `${entry.pseudoinstagram}_${entry.npa}_${entry.created_at}`
-      ) || []
+    // Créer un Set des pseudos déjà dans l'historique
+    const existingPseudos = new Set(
+      existingHistory?.map(entry => entry.pseudoinstagram) || []
     )
 
-    // Filtrer pour ne garder que les participants vraiment nouveaux
-    const newParticipants = participants.filter(participant => {
-      const participantKey = `${participant.pseudoinstagram}_${participant.npa}_${participant.created_at}`
-      return !existingKeys.has(participantKey)
+    console.log(`[PERFORM DRAW] Pseudos déjà dans l'historique: ${existingPseudos.size}`)
+    console.log(`[PERFORM DRAW] Pseudos existants:`, Array.from(existingPseudos).slice(0, 5)) // Afficher les 5 premiers pour debug
+
+    // Filtrer pour ne garder que les participants VRAIMENT nouveaux (première participation jamais vue)
+    const firstTimeParticipants = participants.filter(participant => {
+      const isNew = !existingPseudos.has(participant.pseudoinstagram)
+      if (!isNew) {
+        console.log(`[PERFORM DRAW] ${participant.pseudoinstagram} déjà vu, ignoré`)
+      }
+      return isNew
     })
 
-    console.log(`[PERFORM DRAW] Participants total: ${participants.length}`)
-    console.log(`[PERFORM DRAW] Participants déjà dans l'historique: ${existingKeys.size}`)
-    console.log(`[PERFORM DRAW] Nouveaux participants à ajouter: ${newParticipants.length}`)
+    console.log(`[PERFORM DRAW] 📊 Analyse des participants:`)
+    console.log(`[PERFORM DRAW]   - Total participants actuels: ${participants.length}`)
+    console.log(`[PERFORM DRAW]   - Participants déjà dans l'historique: ${participants.length - firstTimeParticipants.length}`)
+    console.log(`[PERFORM DRAW]   - Nouveaux participants (première fois): ${firstTimeParticipants.length}`)
 
-    // Sauvegarder SEULEMENT les nouveaux participants
-    if (newParticipants.length > 0) {
-      const historyEntries = newParticipants.map(participant => ({
+    // Sauvegarder SEULEMENT les participants qui participent pour la première fois
+    if (firstTimeParticipants.length > 0) {
+      const historyEntries = firstTimeParticipants.map(participant => ({
         pseudoinstagram: participant.pseudoinstagram,
         npa: participant.npa,
-        created_at: participant.created_at,
-        draw_date: winnerData.draw_date,
-        draw_id: winnerData.id
+        created_at: participant.created_at, // Date de leur première inscription
+        draw_date: winnerData.draw_date, // Date du tirage actuel
+        draw_id: winnerData.id // ID du tirage actuel
       }))
 
-      // 🔧 AMÉLIORATION : Utiliser upsert avec gestion des conflits
+      console.log(`[PERFORM DRAW] Ajout de ${firstTimeParticipants.length} nouveaux participants à l'historique:`)
+      firstTimeParticipants.forEach(p => {
+        console.log(`[PERFORM DRAW]   - ${p.pseudoinstagram} (première participation)`)
+      })
+
+      // 🔧 AMÉLIORATION : Utiliser insert simple puisqu'on a déjà filtré les doublons
       const { error: historyError } = await supabase
         .from('participants_history')
-        .upsert(historyEntries, { 
-          onConflict: 'pseudoinstagram,created_at',
-          ignoreDuplicates: true 
-        })
+        .insert(historyEntries)
 
       if (historyError) {
-        console.error('Erreur lors de l\'ajout à l\'historique:', historyError)
+        console.error('[PERFORM DRAW] Erreur lors de l\'ajout à l\'historique:', historyError)
         // Ne pas arrêter le processus si l'historique échoue
       } else {
-        console.log(`[PERFORM DRAW] ${newParticipants.length} nouveaux participants ajoutés à l'historique`)
+        console.log(`[PERFORM DRAW] ✅ ${firstTimeParticipants.length} nouveaux participants ajoutés à l'historique avec succès`)
       }
     } else {
-      console.log('[PERFORM DRAW] Aucun nouveau participant à ajouter (tous déjà présents dans l\'historique)')
+      console.log('[PERFORM DRAW] 👥 Aucun nouveau participant - Tous ont déjà participé au moins une fois')
     }
 
     // Supprimer les participants
@@ -190,7 +197,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       success: true,
       winner: winnerData,
       allParticipants: participants,
-      newParticipantsAdded: newParticipants.length,
+      newParticipantsAdded: firstTimeParticipants.length,
       message: 'Tirage effectué avec succès - Protection anti-doublons renforcée'
     })
 
