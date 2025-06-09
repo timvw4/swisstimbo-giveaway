@@ -197,26 +197,17 @@ export default function Tirage() {
     
     console.log('✅ Tirage récent, récupération des participants...')
     
-    // Récupérer les participants historiques
-    const { data: historicalParticipants, error: historyError } = await supabase
-      .from('participants_history')
-      .select('*')
-      .eq('draw_id', winnerData.id)
-
-    if (historyError) {
-      console.error('❌ Erreur récupération historique:', historyError)
-      return
-    }
-
-    if (historicalParticipants && historicalParticipants.length > 0) {
-      console.log(`📊 Participants historiques récupérés: ${historicalParticipants.length}`)
+    // 🔧 CORRECTION MAJEURE : Utiliser les participants actuels au lieu des participants_history
+    // Les participants actuels représentent TOUS ceux qui étaient présents au moment du tirage
+    // Car ils sont supprimés SEULEMENT APRÈS le tirage dans perform-draw.ts
+    const currentParticipants = participants // Utiliser l'état actuel des participants
+    
+    if (currentParticipants && currentParticipants.length > 0) {
+      console.log(`📊 Participants au moment du tirage récupérés: ${currentParticipants.length}`)
+      console.log('👥 Participants:', currentParticipants.map(p => p.pseudoinstagram))
       
-      setFrozenParticipants(historicalParticipants.map(p => ({
-        id: p.id,
-        pseudoinstagram: p.pseudoinstagram,
-        npa: p.npa,
-        created_at: p.created_at
-      })))
+      // Utiliser les participants actuels comme participants figés
+      setFrozenParticipants([...currentParticipants])
 
       // Créer l'objet gagnant
       const winner = {
@@ -254,12 +245,14 @@ export default function Tirage() {
         // Lancer l'animation synchronisée
         setTimeout(() => {
           console.log('🏆 ANIMATION TERMINÉE - Affichage du gagnant (Realtime)')
-          completeDrawAnimation(winner, historicalParticipants, winnerData.draw_date, drawTime)
+          completeDrawAnimation(winner, currentParticipants, winnerData.draw_date, drawTime)
         }, finalAnimationTime)
       } else {
         // Affichage direct
-        completeDrawAnimation(winner, historicalParticipants, winnerData.draw_date, drawTime)
+        completeDrawAnimation(winner, currentParticipants, winnerData.draw_date, drawTime)
       }
+    } else {
+      console.log('❌ Aucun participant trouvé au moment du tirage')
     }
   }
 
