@@ -135,9 +135,9 @@ export default function Tirage() {
     try {
       console.log('🔍 Vérification de nouveau tirage...')
       
-      // 🔧 AMÉLIORATION : Vérifier s'il y a un nouveau gagnant dans les 15 dernières minutes
+      // 🔧 AMÉLIORATION : Vérifier s'il y a un nouveau gagnant dans les 30 dernières minutes (élargi)
       const recentTime = new Date()
-      recentTime.setMinutes(recentTime.getMinutes() - 15)
+      recentTime.setMinutes(recentTime.getMinutes() - 30) // Plus généreux pour détecter les tirages
 
       // 🔧 CORRECTION MAJEURE : Utiliser .maybeSingle() au lieu de .single() pour éviter l'erreur 406
       const { data: recentWinner, error } = await supabase
@@ -155,7 +155,7 @@ export default function Tirage() {
 
       // Si pas de gagnant récent, c'est normal, pas d'erreur
       if (!recentWinner) {
-        console.log('📭 Aucun gagnant récent trouvé dans les 15 dernières minutes')
+        console.log('📭 Aucun gagnant récent trouvé dans les 30 dernières minutes')
         return
       }
 
@@ -220,36 +220,28 @@ export default function Tirage() {
             created_at: recentWinner.draw_date
           }
 
-          // 🔧 SIMPLIFICATION : Logique plus claire pour l'animation
-          const timeForAnimation = 10 * 1000 // 10 secondes
+          // 🔧 NOUVELLE STRATÉGIE : Synchronisation absolue sur timestamp de fin
+          const animationDuration = 10000 // 10 secondes d'animation FIXE
+          const animationEndTime = drawTime + animationDuration // Heure absolue de fin
+          const now = Date.now()
+          const remainingAnimationTime = animationEndTime - now
           
-          console.log(`🔢 Calcul du timing:`)
-          console.log(`  - Temps pour animation: ${timeForAnimation}ms (${timeForAnimation/1000}s)`)
-          console.log(`  - Temps écoulé depuis tirage: ${timeSinceDraw}ms (${Math.round(timeSinceDraw/1000)}s)`)
-          console.log(`  - Animation nécessaire: ${timeSinceDraw < timeForAnimation}`)
+          console.log(`🕐 Calcul synchronisation absolue:`)
+          console.log(`  - Heure du tirage: ${new Date(drawTime).toLocaleTimeString()}`)
+          console.log(`  - Fin animation prévue: ${new Date(animationEndTime).toLocaleTimeString()}`)
+          console.log(`  - Maintenant: ${new Date(now).toLocaleTimeString()}`)
+          console.log(`  - Temps restant pour animation: ${Math.round(remainingAnimationTime / 1000)}s`)
           
-          // 🔧 NOUVELLE LOGIQUE : Forcer l'animation si le tirage est très récent (moins de 30 secondes)
-          const isVeryRecentDraw = timeSinceDraw < (30 * 1000) // 30 secondes
-          
-          if (timeSinceDraw < timeForAnimation || isVeryRecentDraw) {
-            // Animation en cours ou tirage très récent
-            let remainingAnimationTime
-            
-            if (timeSinceDraw < timeForAnimation) {
-              remainingAnimationTime = timeForAnimation - timeSinceDraw
-              console.log(`🎲 ANIMATION EN COURS - Temps restant: ${Math.round(remainingAnimationTime / 1000)}s`)
-            } else {
-              // Tirage récent mais animation "déjà finie" selon le calcul - on force quand même une animation courte
-              remainingAnimationTime = 3000 // 3 secondes d'animation minimum
-              console.log(`🎲 ANIMATION FORCÉE (tirage récent) - Durée: ${Math.round(remainingAnimationTime / 1000)}s`)
-            }
+          if (remainingAnimationTime > 0) {
+            // L'animation doit encore se jouer
+            console.log(`🎲 ANIMATION SYNCHRONISÉE - Temps restant: ${Math.round(remainingAnimationTime / 1000)}s`)
             
             setIsSpinning(true)
             setWaitingForDraw(false)
             setLastCheckedWinner(recentWinner.id)
             
             setTimeout(() => {
-              console.log('🏆 ANIMATION TERMINÉE - Affichage du gagnant')
+              console.log('🏆 ANIMATION TERMINÉE (synchronisée) - Affichage du gagnant')
               setWinner(winnerData)
               setIsSpinning(false)
               setShowWinnerMessage(true)
@@ -265,9 +257,8 @@ export default function Tirage() {
               })), winnerData, recentWinner.draw_date)
 
               // Programmer le nettoyage basé sur l'heure réelle du tirage
-              const now = Date.now()
               const fiveMinutesFromDraw = drawTime + fiveMinutes
-              const remainingDisplayTime = fiveMinutesFromDraw - now
+              const remainingDisplayTime = fiveMinutesFromDraw - Date.now()
               
               console.log(`🧹 Nettoyage programmé dans ${Math.round(remainingDisplayTime / 1000)}s`)
               
@@ -278,7 +269,6 @@ export default function Tirage() {
                 }, remainingDisplayTime)
               }
             }, remainingAnimationTime)
-            
           } else {
             // Animation déjà terminée, afficher directement
             console.log('🏆 AFFICHAGE DIRECT DU GAGNANT (animation déjà terminée)')
@@ -450,8 +440,8 @@ export default function Tirage() {
     // 🔧 NOUVEAU : Vérification très fréquente pour synchronisation parfaite
     let interval: number
     if (isDrawTime || waitingForDraw) {
-      interval = 500 // 500ms = 0.5 seconde pendant le tirage pour synchronisation ULTRA-RAPIDE
-      console.log('🚀 Mode synchronisation ULTRA-RAPIDE activé (500ms)')
+      interval = 100 // 100ms = 0.1 seconde pour synchronisation PARFAITE (10 vérifications/seconde)
+      console.log('🚀 Mode synchronisation PARFAITE activé (100ms)')
     } else if (isInPostDrawPeriod) {
       interval = 5000 // 5 secondes pendant l'affichage du gagnant
       console.log('👑 Mode affichage gagnant (5s)')
