@@ -20,21 +20,43 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   drawInProgress = true
 
   try {
-    // 🔧 AMÉLIORATION : Vérifier qu'on n'a pas déjà fait un tirage récemment (5 minutes au lieu de 1)
-    const lastDrawCheck = new Date()
-    lastDrawCheck.setMinutes(lastDrawCheck.getMinutes() - 5)
+    // 🔧 AMÉLIORATION MAJEURE : Vérifier qu'aucun tirage n'a eu lieu AUJOURD'HUI
+    const today = new Date()
+    today.setHours(0, 0, 0, 0) // Début de la journée à 00:00:00
+    
+    const tomorrow = new Date(today)
+    tomorrow.setDate(tomorrow.getDate() + 1) // Fin de la journée à 23:59:59
+
+    const { data: todayWinners } = await supabase
+      .from('winners')
+      .select('*')
+      .gte('draw_date', today.toISOString())
+      .lt('draw_date', tomorrow.toISOString())
+
+    if (todayWinners && todayWinners.length > 0) {
+      console.log('[PERFORM DRAW] Tirage déjà effectué aujourd\'hui, annulation')
+      console.log('[PERFORM DRAW] Gagnants d\'aujourd\'hui:', todayWinners.map(w => `${w.pseudoinstagram} à ${w.draw_date}`))
+      return res.status(400).json({ 
+        error: 'Un tirage a déjà été effectué aujourd\'hui',
+        todayWinners: todayWinners 
+      })
+    }
+
+    // 🔧 AMÉLIORATION : Vérification supplémentaire des tirages récents (30 minutes)
+    const recentCheck = new Date()
+    recentCheck.setMinutes(recentCheck.getMinutes() - 30)
 
     const { data: recentWinner } = await supabase
       .from('winners')
       .select('*')
-      .gte('draw_date', lastDrawCheck.toISOString())
+      .gte('draw_date', recentCheck.toISOString())
       .single()
 
     if (recentWinner) {
-      console.log('[PERFORM DRAW] Tirage récent détecté, annulation')
+      console.log('[PERFORM DRAW] Tirage très récent détecté (moins de 30min), annulation')
       return res.status(400).json({ 
-        error: 'Un tirage a déjà été effectué récemment',
-        winner: recentWinner 
+        error: 'Un tirage très récent a été détecté',
+        recentWinner: recentWinner 
       })
     }
 
@@ -44,10 +66,43 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .select('*')
 
     if (!participants || participants.length === 0) {
+      console.log('[PERFORM DRAW] Aucun participant trouvé')
       return res.status(400).json({ error: 'Aucun participant' })
     }
 
     console.log(`[PERFORM DRAW] Début du tirage avec ${participants.length} participants`)
+
+    // 🔧 AMÉLIORATION : Vérification que c'est bien un jour de tirage
+    const now = new Date()
+    const dayOfWeek = now.getDay() // 0 = dimanche, 3 = mercredi
+    const currentHour = now.getHours()
+    const currentMinutes = now.getMinutes()
+
+    // 🔧 CORRECTION : Tirage autorisé UNIQUEMENT à 20h pile (avec une marge de 2 minutes seulement)
+    const isCorrectDay = (dayOfWeek === 0 || dayOfWeek === 3) // Dimanche ou mercredi
+    const isCorrectTime = currentHour === 20 && currentMinutes >= 0 && currentMinutes <= 1
+
+    if (!isCorrectDay || !isCorrectTime) {
+      console.log(`[PERFORM DRAW] Tirage tenté en dehors des heures autorisées`)
+      console.log(`[PERFORM DRAW] Jour actuel: ${dayOfWeek} (0=dimanche, 3=mercredi)`)
+      console.log(`[PERFORM DRAW] Heure actuelle: ${currentHour}h${currentMinutes.toString().padStart(2, '0')}`)
+      console.log('[PERFORM DRAW] Tirages autorisés: Dimanche et Mercredi à 20h00-20h02 UNIQUEMENT')
+      
+      // En mode développement, permettre quand même le tirage
+      if (process.env.NODE_ENV !== 'development') {
+        return res.status(400).json({ 
+          error: 'Tirage autorisé seulement les mercredis et dimanches à 20h pile (±1 minute)',
+          currentDay: dayOfWeek,
+          currentTime: `${currentHour}h${currentMinutes.toString().padStart(2, '0')}`,
+          expectedDays: [0, 3], // Dimanche, Mercredi
+          expectedTime: '20h00-20h01'
+        })
+      } else {
+        console.log('[PERFORM DRAW] Mode développement: tirage autorisé malgré l\'horaire')
+      }
+    }
+
+    console.log(`[PERFORM DRAW] ✅ Tirage autorisé - ${dayOfWeek === 0 ? 'Dimanche' : 'Mercredi'} à ${currentHour}h${currentMinutes.toString().padStart(2, '0')}`)
 
     // TIRAGE UNIQUE côté serveur
     const winnerIndex = Math.floor(Math.random() * participants.length)
@@ -134,7 +189,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       success: true,
       winner: winnerData,
       allParticipants: participants,
-      newParticipantsAdded: newParticipants.length
+      newParticipantsAdded: newParticipants.length,
+      message: 'Tirage effectué avec succès - Protection anti-doublons renforcée'
     })
 
   } catch (error) {
