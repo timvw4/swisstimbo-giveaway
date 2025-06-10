@@ -62,7 +62,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         isValidDrawTime: (new Date().getDay() === 0 || new Date().getDay() === 3) && 
                          new Date().getHours() === 20 && 
                          new Date().getMinutes() >= 0 && 
-                         new Date().getMinutes() <= 2
+                         new Date().getMinutes() <= 1
       }
     })
   } catch (error) {

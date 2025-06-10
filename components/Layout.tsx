@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import Head from 'next/head'
 import Link from 'next/link'
+import { useRouter } from 'next/router'
 import { useSessionTracking } from '@/hooks/useSessionTracking'
 
 interface LayoutProps {
@@ -15,9 +16,43 @@ export default function Layout({
   description = "Participez gratuitement et gagnez 20 CHF ! Tirages tous les mercredis et dimanches à 20h. Inscription simple et rapide."
 }: LayoutProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  // 🔐 NOUVEAU : État pour le compteur admin caché
+  const [adminClickCount, setAdminClickCount] = useState(0)
+  const router = useRouter()
   
   // 🔧 NOUVEAU : Activer le tracking de session pour tous les utilisateurs
   useSessionTracking()
+  
+  // 🔐 MODIFIÉ : Fonction pour gérer la redirection admin cachée ET la navigation vers l'accueil
+  const handleLogoClick = () => {
+    setAdminClickCount(prev => {
+      const newCount = prev + 1
+      
+      if (newCount >= 5) {
+        // Redirection directe vers l'admin
+        router.push('/admin')
+        return 0
+      }
+      
+      // Si c'est le premier clic, programmer la redirection vers l'accueil
+      if (newCount === 1) {
+        setTimeout(() => {
+          // Vérifier qu'on n'a pas eu d'autres clics entre temps
+          setAdminClickCount(currentCount => {
+            if (currentCount === 1) {
+              router.push('/')
+              return 0
+            }
+            return currentCount
+          })
+        }, 500) // Attendre 500ms pour voir s'il y a d'autres clics
+      }
+      
+      // Reset après 2 secondes d'inactivité
+      setTimeout(() => setAdminClickCount(0), 2000)
+      return newCount
+    })
+  }
   
   // 🔧 CORRECTION : Gérer les URLs selon l'environnement
   const isDevelopment = process.env.NODE_ENV === 'development'
@@ -85,9 +120,13 @@ export default function Layout({
         <nav className="bg-dollar-green text-white p-4">
           <div className="container mx-auto">
             <div className="flex justify-between items-center">
-              <Link href="/" className="text-xl md:text-2xl font-bold">
+              <div 
+                className="text-xl md:text-2xl font-bold cursor-pointer select-none hover:text-light-gray"
+                onClick={handleLogoClick}
+                title="Cliquez 5 fois rapidement pour accéder aux options avancées"
+              >
                 @Swiss.Timbo
-              </Link>
+              </div>
               
               {/* Bouton menu hamburger pour mobile */}
               <button 
