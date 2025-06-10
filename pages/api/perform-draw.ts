@@ -6,6 +6,17 @@ import { supabase } from '@/lib/supabaseClient'
 let drawInProgress = false
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  console.log('[PERFORM DRAW] Début du processus de tirage')
+  
+  // 🎯 NOUVEAU : Configuration pour gain spécial (modifier ici pour activer)
+  const GAIN_SPECIAL = {
+    actif: true, // ✨ Mettre à false pour revenir au gain normal
+    montant: 40, // 💰 Montant du gain spécial
+    description: "🎉 TIRAGE SPÉCIAL - GAIN DOUBLÉ !"
+  }
+  
+  const montantGain = GAIN_SPECIAL.actif ? GAIN_SPECIAL.montant : 20
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
@@ -118,7 +129,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         participant_id: winner.id,
         pseudoinstagram: winner.pseudoinstagram,
         draw_date: new Date().toISOString(),
-        montant: 20
+        montant: montantGain
       }])
       .select()
       .single()

@@ -25,7 +25,15 @@ const Countdown = dynamic<CountdownProps>(() => import('react-countdown'), {
 
 export default function Home() {
   const [participantCount, setParticipantCount] = useState<number>(0)
-  const montantGain = 20 // Montant en CHF
+  
+  // 🎯 NOUVEAU : Configuration pour gain spécial (doit correspondre à l'API)
+  const GAIN_SPECIAL = {
+    actif: true, // ✨ Mettre à false pour revenir au gain normal
+    montant: 40, // 💰 Montant du gain spécial
+    description: "🎉 TIRAGE SPÉCIAL - GAIN DOUBLÉ !"
+  }
+  
+  const montantGain = GAIN_SPECIAL.actif ? GAIN_SPECIAL.montant : 20 // Montant en CHF
   
   useEffect(() => {
     const fetchParticipantCount = async () => {
@@ -59,6 +67,18 @@ export default function Home() {
         <h1 className="text-3xl md:text-4xl font-bold mb-4 md:mb-6">Swiss Timbo</h1>
         
         <div className="bg-dollar-green text-white p-4 md:p-8 rounded-lg mb-6 md:mb-8">
+          {/* 🎯 NOUVEAU : Affichage du gain spécial */}
+          {GAIN_SPECIAL.actif && (
+            <div className="bg-white/20 text-center p-3 md:p-4 rounded-lg mb-4 border-2 border-white/50">
+              <p className="text-lg md:text-xl font-bold animate-pulse">
+                {GAIN_SPECIAL.description}
+              </p>
+              <p className="text-sm md:text-base opacity-90 mt-1">
+                Montant exceptionnel pour ce tirage uniquement !
+              </p>
+            </div>
+          )}
+          
           <h2 className="text-2xl md:text-3xl mb-3 md:mb-4">Gagnez {montantGain} CHF gratuitement !</h2>
           <p className="text-lg md:text-xl mb-4 md:mb-6">
             Participez à notre tirage au sort et tentez de gagner. 

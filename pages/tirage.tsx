@@ -64,6 +64,13 @@ export default function Tirage() {
   const [isMobile, setIsMobile] = useState(false)
   const [lastCheckedWinnerTime, setLastCheckedWinnerTime] = useState<number>(Date.now())
   
+  // 🎯 NOUVEAU : Configuration pour gain spécial (doit correspondre à l'API et index.tsx)
+  const GAIN_SPECIAL = {
+    actif: true, // ✨ Mettre à false pour revenir au gain normal
+    montant: 40, // 💰 Montant du gain spécial
+    description: "🎉 TIRAGE SPÉCIAL - GAIN DOUBLÉ !"
+  }
+  
   // 🔧 NOUVEAU : Refs pour accéder aux valeurs actuelles sans dépendances circulaires
   const participantsRef = useRef<Participant[]>([])
   const participantsAtDrawTimeRef = useRef<Participant[]>([])
@@ -499,6 +506,21 @@ export default function Tirage() {
     <Layout>
       <div className="max-w-4xl mx-auto text-center px-4">
         <h1 className="text-2xl md:text-4xl font-bold mb-6 md:mb-8">Tirage au sort</h1>
+        
+        {/* 🎯 NOUVEAU : Affichage du gain spécial */}
+        {GAIN_SPECIAL.actif && (
+          <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white p-4 md:p-6 rounded-lg mb-6 md:mb-8 border-2 border-yellow-300 shadow-lg">
+            <p className="text-xl md:text-2xl font-bold animate-pulse mb-2">
+              {GAIN_SPECIAL.description}
+            </p>
+            <p className="text-lg md:text-xl font-semibold">
+              🎁 {GAIN_SPECIAL.montant} CHF à gagner aujourd'hui !
+            </p>
+            <p className="text-sm md:text-base opacity-90 mt-2">
+              Montant exceptionnel pour ce tirage uniquement
+            </p>
+          </div>
+        )}
         
         <div className="mb-6 md:mb-8">
           <h2 className="text-xl md:text-2xl mb-3 md:mb-4">Prochain tirage dans :</h2>
