@@ -28,7 +28,7 @@ export default function Home() {
   
   // 🎯 NOUVEAU : Configuration pour gain spécial (doit correspondre à l'API)
   const GAIN_SPECIAL = {
-    actif: true, // ✨ Mettre à false pour revenir au gain normal
+    actif: false, // ✨ Mettre à false pour revenir au gain normal
     montant: 40, // 💰 Montant du gain spécial
     description: "🎉 TIRAGE SPÉCIAL - GAIN DOUBLÉ !"
   }
