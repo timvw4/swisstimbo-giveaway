@@ -449,9 +449,9 @@ export default function Tirage() {
     // 🔧 NOUVEAU : Polling pour mobile + mise à jour normale
     const normalInterval = setInterval(fetchInitialData, isInPostDrawPeriod ? 10000 : 30000)
     
-    // 🔧 NOUVEAU : Polling fallback pour mobile uniquement
+    // 🔧 NOUVEAU : Polling fallback pour mobile uniquement (optimisé)
     const mobileInterval = isMobile && waitingForDraw 
-      ? setInterval(checkForNewWinners, 2000) // Vérifie toutes les 2 secondes sur mobile
+      ? setInterval(checkForNewWinners, 5000) // Vérifie toutes les 5 secondes sur mobile (optimisé)
       : null
     
     return () => {

@@ -90,31 +90,32 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const currentHour = now.getHours()
     const currentMinutes = now.getMinutes()
 
-    // 🔧 CORRECTION : Tirage autorisé UNIQUEMENT à 20h pile (avec une marge de 2 minutes seulement)
+    // 🔧 CORRECTION : Tirage autorisé UNIQUEMENT à 18h00 UTC = 20h00 CEST (heure suisse)
     const isCorrectDay = (dayOfWeek === 0 || dayOfWeek === 3) // Dimanche ou mercredi
-    const isCorrectTime = currentHour === 20 && currentMinutes >= 0 && currentMinutes <= 1
+    const isCorrectTime = currentHour === 18 && currentMinutes >= 0 && currentMinutes <= 1
 
     if (!isCorrectDay || !isCorrectTime) {
       console.log(`[PERFORM DRAW] Tirage tenté en dehors des heures autorisées`)
       console.log(`[PERFORM DRAW] Jour actuel: ${dayOfWeek} (0=dimanche, 3=mercredi)`)
-      console.log(`[PERFORM DRAW] Heure actuelle: ${currentHour}h${currentMinutes.toString().padStart(2, '0')}`)
-      console.log('[PERFORM DRAW] Tirages autorisés: Dimanche et Mercredi à 20h00-20h01 UNIQUEMENT')
+      console.log(`[PERFORM DRAW] Heure actuelle: ${currentHour}h${currentMinutes.toString().padStart(2, '0')} UTC = ${(currentHour + 2) % 24}h${currentMinutes.toString().padStart(2, '0')} CEST`)
+      console.log('[PERFORM DRAW] Tirages autorisés: Dimanche et Mercredi à 18h00-18h01 UTC (20h00-20h01 Suisse) UNIQUEMENT')
       
       // En mode développement, permettre quand même le tirage
       if (process.env.NODE_ENV !== 'development') {
         return res.status(400).json({ 
-          error: 'Tirage autorisé seulement les mercredis et dimanches à 20h pile (±1 minute)',
+          error: 'Tirage autorisé seulement les mercredis et dimanches à 20h00 heure suisse (18h00 UTC ±1 minute)',
           currentDay: dayOfWeek,
-          currentTime: `${currentHour}h${currentMinutes.toString().padStart(2, '0')}`,
+          currentTime: `${currentHour}h${currentMinutes.toString().padStart(2, '0')} UTC`,
+          currentTimeSwiss: `${(currentHour + 2) % 24}h${currentMinutes.toString().padStart(2, '0')} CEST`,
           expectedDays: [0, 3], // Dimanche, Mercredi
-          expectedTime: '20h00-20h01'
+          expectedTime: '18h00-18h01 UTC (20h00-20h01 CEST)'
         })
       } else {
         console.log('[PERFORM DRAW] Mode développement: tirage autorisé malgré l\'horaire')
       }
     }
 
-    console.log(`[PERFORM DRAW] ✅ Tirage autorisé - ${dayOfWeek === 0 ? 'Dimanche' : 'Mercredi'} à ${currentHour}h${currentMinutes.toString().padStart(2, '0')}`)
+    console.log(`[PERFORM DRAW] ✅ Tirage autorisé - ${dayOfWeek === 0 ? 'Dimanche' : 'Mercredi'} à ${currentHour}h${currentMinutes.toString().padStart(2, '0')} UTC (${(currentHour + 2) % 24}h${currentMinutes.toString().padStart(2, '0')} CEST)`)
 
     // TIRAGE UNIQUE côté serveur
     const winnerIndex = Math.floor(Math.random() * participants.length)
@@ -215,10 +216,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   } catch (error) {
     console.error('[PERFORM DRAW] Erreur tirage:', error)
     const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue'
+    
+    // 🔧 AMÉLIORATION : Log détaillé en cas d'erreur critique
+    console.error('[PERFORM DRAW] Stack trace:', error instanceof Error ? error.stack : 'N/A')
+    console.error('[PERFORM DRAW] Contexte - Heure:', new Date().toISOString())
+    
     return res.status(500).json({ error: errorMessage })
   } finally {
-    // 🔧 NOUVEAU : Toujours libérer le verrou
+    // 🔧 NOUVEAU : Toujours libérer le verrou avec timeout de sécurité
     drawInProgress = false
     console.log('[PERFORM DRAW] Verrou de tirage libéré')
+    
+    // 🔧 SÉCURITÉ : Timeout de sécurité pour éviter les blocages permanents
+    setTimeout(() => {
+      if (drawInProgress) {
+        console.warn('[PERFORM DRAW] ⚠️ SÉCURITÉ: Libération forcée du verrou après timeout')
+        drawInProgress = false
+      }
+    }, 30000) // 30 secondes de timeout
   }
-} 
+}

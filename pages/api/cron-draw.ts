@@ -19,8 +19,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   // 🔧 NOUVEAU : Log d'information sur le déclenchement
   console.log('[CRON] 🕐 Tirage CRON déclenché à:', new Date().toISOString())
   console.log('[CRON] 📍 Jour de la semaine:', new Date().getDay()) // 0 = dimanche, 3 = mercredi
-  console.log('[CRON] ⏰ Heure actuelle:', `${new Date().getHours()}h${new Date().getMinutes().toString().padStart(2, '0')}`)
-  console.log('[CRON] 🎯 Tirage attendu: Dimanche et Mercredi à 20h00 pile')
+  console.log('[CRON] ⏰ Heure actuelle UTC:', `${new Date().getHours()}h${new Date().getMinutes().toString().padStart(2, '0')}`)
+  console.log('[CRON] ⏰ Heure actuelle Suisse:', `${(new Date().getHours() + 2) % 24}h${new Date().getMinutes().toString().padStart(2, '0')} CEST`)
+  console.log('[CRON] 🎯 Tirage attendu: Dimanche et Mercredi à 18h00 UTC (20h00 Suisse) pile')
 
   try {
     // 🔧 AMÉLIORATION : Rediriger vers l'API centralisée qui a la logique anti-doublons renforcée
@@ -59,8 +60,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         dayOfWeek: new Date().getDay(),
         hour: new Date().getHours(),
         minutes: new Date().getMinutes(),
+        hourSwiss: (new Date().getHours() + 2) % 24,
         isValidDrawTime: (new Date().getDay() === 0 || new Date().getDay() === 3) && 
-                         new Date().getHours() === 20 && 
+                         new Date().getHours() === 18 && 
                          new Date().getMinutes() >= 0 && 
                          new Date().getMinutes() <= 1
       }
