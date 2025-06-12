@@ -3,6 +3,7 @@ import Head from 'next/head'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useSessionTracking } from '@/hooks/useSessionTracking'
+import { Analytics } from '@vercel/analytics/next'
 
 interface LayoutProps {
   children: React.ReactNode
@@ -225,6 +226,9 @@ export default function Layout({
           </div>
         </footer>
       </div>
+      
+      {/* 📊 Vercel Analytics */}
+      <Analytics />
     </>
   )
 } 
