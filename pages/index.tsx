@@ -91,7 +91,7 @@ export default function Home() {
             </p>
             <Link href="/tirage" className="block">
               <p className="text-lg md:text-xl bg-white/20 p-4 rounded-lg font-semibold cursor-pointer hover:bg-white/30 transition-colors">
-                <span className="text-yellow-300 font-bold underline decoration-2">{formatNextDrawDate()}</span>
+                <span className="text-white font-bold underline decoration-2">{formatNextDrawDate()}</span>
               </p>
             </Link>
           </div>
