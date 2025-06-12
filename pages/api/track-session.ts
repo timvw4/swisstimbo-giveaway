@@ -25,14 +25,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       if (error) throw error
 
-      // Nettoyer les sessions inactives (plus de 5 minutes)
-      const fiveMinutesAgo = new Date()
-      fiveMinutesAgo.setMinutes(fiveMinutesAgo.getMinutes() - 5)
+      // Nettoyer les sessions inactives (plus de 2 minutes)
+      const twoMinutesAgo = new Date()
+      twoMinutesAgo.setMinutes(twoMinutesAgo.getMinutes() - 2)
 
       await supabase
         .from('active_sessions')
         .delete()
-        .lt('last_activity', fiveMinutesAgo.toISOString())
+        .lt('last_activity', twoMinutesAgo.toISOString())
 
       return res.status(200).json({ success: true })
     } catch (error) {
@@ -44,14 +44,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method === 'GET') {
     // Récupérer le nombre d'utilisateurs connectés
     try {
-      // Compter les sessions actives (moins de 5 minutes)
-      const fiveMinutesAgo = new Date()
-      fiveMinutesAgo.setMinutes(fiveMinutesAgo.getMinutes() - 5)
+      // Compter les sessions actives (moins de 2 minutes)
+      const twoMinutesAgo = new Date()
+      twoMinutesAgo.setMinutes(twoMinutesAgo.getMinutes() - 2)
 
       const { count, error } = await supabase
         .from('active_sessions')
         .select('*', { count: 'exact' })
-        .gte('last_activity', fiveMinutesAgo.toISOString())
+        .gte('last_activity', twoMinutesAgo.toISOString())
 
       if (error) throw error
 

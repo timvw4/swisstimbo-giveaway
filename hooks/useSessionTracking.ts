@@ -37,10 +37,10 @@ export const useSessionTracking = () => {
     // Envoyer le premier heartbeat
     sendHeartbeat()
 
-    // Configurer l'intervalle pour envoyer un heartbeat toutes les 2 minutes
+    // Configurer l'intervalle pour envoyer un heartbeat toutes les 30 secondes
     intervalRef.current = setInterval(() => {
       sendHeartbeat()
-    }, 2 * 60 * 1000) // 2 minutes
+    }, 30 * 1000) // 30 secondes
 
     // Nettoyer à la fermeture
     const cleanup = () => {
