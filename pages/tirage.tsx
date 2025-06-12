@@ -56,6 +56,7 @@ export default function Tirage() {
   const [lastCheckedWinner, setLastCheckedWinner] = useState<string | null>(null)
   const [countdownCompleted, setCountdownCompleted] = useState(false)
   const [waitingForDraw, setWaitingForDraw] = useState(false)
+  const [isBackgroundTransitioning, setIsBackgroundTransitioning] = useState(false)
   // 🔧 NOUVEAU : État pour la subscription Realtime
   const [realtimeSubscription, setRealtimeSubscription] = useState<any>(null)
   // 🔧 NOUVEAU : Sauvegarder les participants avant le tirage pour l'animation
@@ -176,7 +177,9 @@ export default function Tirage() {
     
     console.log('✅ Nouveau tirage détecté, préparation de l\'animation...')
     
-    // 🔧 SOLUTION AVEC REFS : Utiliser les valeurs actuelles via les refs
+    // Démarrer la transition du fond
+    setIsBackgroundTransitioning(true)
+    
     const currentParticipants = participantsRef.current
     const currentParticipantsAtDrawTime = participantsAtDrawTimeRef.current
     
@@ -259,6 +262,11 @@ export default function Tirage() {
       console.log('🧹 Nettoyage automatique de l\'état post-tirage')
       clearPostDrawState()
     }, 5 * 60 * 1000) // 5 minutes fixes
+    
+    // Réinitialiser le fond après l'animation
+    setTimeout(() => {
+      setIsBackgroundTransitioning(false)
+    }, 1000) // Attendre 1 seconde après la fin de l'animation
     
     console.log('🏆 FIN completeDrawAnimation')
   }
@@ -504,137 +512,141 @@ export default function Tirage() {
 
   return (
     <Layout>
-      <div className="max-w-4xl mx-auto text-center px-4">
-        <h1 className="text-2xl md:text-4xl font-bold mb-6 md:mb-8">Tirage au sort</h1>
-        
-        {/* 🎯 NOUVEAU : Affichage du gain spécial */}
-        {GAIN_SPECIAL.actif && (
-          <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white p-4 md:p-6 rounded-lg mb-6 md:mb-8 border-2 border-yellow-300 shadow-lg">
-            <p className="text-xl md:text-2xl font-bold animate-pulse mb-2">
-              {GAIN_SPECIAL.description}
-            </p>
-            <p className="text-lg md:text-xl font-semibold">
-              🎁 {GAIN_SPECIAL.montant} CHF à gagner ce soir !
-            </p>
-            <p className="text-sm md:text-base opacity-90 mt-2">
-              Montant exceptionnel pour ce tirage uniquement
-            </p>
+      <div className={`min-h-screen transition-colors duration-1000 ${
+        isBackgroundTransitioning ? 'bg-gray-900' : 'bg-white'
+      }`}>
+        <div className="max-w-4xl mx-auto text-center px-4">
+          <h1 className="text-2xl md:text-4xl font-bold mb-6 md:mb-8">Tirage au sort</h1>
+          
+          {/* 🎯 NOUVEAU : Affichage du gain spécial */}
+          {GAIN_SPECIAL.actif && (
+            <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white p-4 md:p-6 rounded-lg mb-6 md:mb-8 border-2 border-yellow-300 shadow-lg">
+              <p className="text-xl md:text-2xl font-bold animate-pulse mb-2">
+                {GAIN_SPECIAL.description}
+              </p>
+              <p className="text-lg md:text-xl font-semibold">
+                🎁 {GAIN_SPECIAL.montant} CHF à gagner ce soir !
+              </p>
+              <p className="text-sm md:text-base opacity-90 mt-2">
+                Montant exceptionnel pour ce tirage uniquement
+              </p>
+            </div>
+          )}
+          
+          <div className="mb-6 md:mb-8">
+            <h2 className="text-xl md:text-2xl mb-3 md:mb-4"> Tirage dans :</h2>
+            {isClient && (
+              <div className="text-2xl md:text-3xl font-bold">
+                <Countdown 
+                  date={getNextDrawDate()} 
+                  onComplete={handleCountdownComplete}
+                  renderer={(props: CountdownRenderProps) => (
+                    <span>
+                      {props.days > 0 && `${props.days}j `}
+                      {props.hours}h {props.minutes}m {props.seconds}s
+                    </span>
+                  )}
+                />
+              </div>
+            )}
           </div>
-        )}
-        
-        <div className="mb-6 md:mb-8">
-          <h2 className="text-xl md:text-2xl mb-3 md:mb-4">Prochain tirage dans :</h2>
-          {isClient && (
-            <div className="text-2xl md:text-3xl font-bold">
-              <Countdown 
-                date={getNextDrawDate()} 
-                onComplete={handleCountdownComplete}
-                renderer={(props: CountdownRenderProps) => (
-                  <span>
-                    {props.days > 0 && `${props.days}j `}
-                    {props.hours}h {props.minutes}m {props.seconds}s
-                  </span>
-                )}
+
+          {/* 🛠️ DÉVELOPPEMENT : Bouton de test - toujours visible en dev */}
+          {isClient && process.env.NODE_ENV === 'development' && (
+            <div className="mb-6 p-4 bg-yellow-100 border-2 border-yellow-400 rounded-lg max-w-md mx-auto">
+              <h3 className="text-lg font-bold mb-3 text-yellow-800">🛠️ Mode Développement</h3>
+              <button
+                onClick={handleTestAutoDraw}
+                className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded transition-colors font-semibold w-full"
+                disabled={isSpinning || waitingForDraw}
+              >
+                🎯 Tester le tirage automatique
+              </button>
+              <p className="text-sm text-yellow-700 mt-2">
+                Ce bouton n'est visible qu'en mode développement
+              </p>
+              {/* 🔧 NOUVEAU : Indicateur de status Realtime */}
+              <div className="mt-3 text-sm">
+                <span className="text-green-600">📡 Realtime: 
+                  {realtimeSubscription ? ' ✅ Connecté' : ' ⏳ Connexion...'}
+                </span>
+              </div>
+            </div>
+          )}
+
+          {isClient && displayedParticipants.length > 0 ? (
+            <div className="mb-6 md:mb-8">
+              {/* 🔧 AMÉLIORÉ : Message d'attente du tirage après countdown */}
+              {waitingForDraw && !isSpinning && !winner && (
+                <div className="mb-6">
+                  <div className="bg-orange-500 text-white p-4 md:p-6 rounded-lg">
+                    <h3 className="text-xl md:text-2xl mb-2">⏳ En attente du tirage...</h3>
+                    <p className="text-lg md:text-xl">
+                      Le tirage sera détecté instantanément ! 
+                      <br />
+                      <span className="text-sm opacity-90">📡 Synchronisation temps réel active</span>
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Animation en cours après détection d'un vrai tirage */}
+              {isSpinning && !winner && (
+                <div className="mb-6">
+                  <div className="bg-blue-500 text-white p-4 md:p-6 rounded-lg">
+                    <h3 className="text-xl md:text-2xl mb-2">🎲 Tirage en cours...</h3>
+                    <p className="text-lg md:text-xl">
+                      Le gagnant va être révélé ! 
+                      <br />
+                      <span className="text-sm opacity-90">🔄 Synchronisé avec tous les utilisateurs</span>
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Message de félicitations */}
+              {!isSpinning && winner && showWinnerMessage && (
+                <div className="mb-6">
+                  <div className="bg-dollar-green text-white p-4 md:p-6 rounded-lg">
+                    <h3 className="text-xl md:text-2xl mb-2">🎉 Félicitations !</h3>
+                    <p className="text-lg md:text-xl">
+                      Le gagnant est : <strong>{winner.pseudoinstagram}</strong>
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Grille des participants */}
+              <PixelGrid
+                participants={displayedParticipants}
+                previousWinners={previousWinners}
+                isSpinning={isSpinning}
+                winner={winner}
+                onStopSpinning={() => setIsSpinning(false)}
               />
+              
+              {/* Message de réinitialisation */}
+              {!isSpinning && winner && isSaved && (
+                <div className="mt-6">
+                  <div className="bg-blue-100 text-blue-800 p-4 rounded-lg">
+                    <p className="text-lg">
+                      Le tirage est terminé ! Les participants seront réinitialisés dans 5 minutes.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="bg-gray-100 p-6 md:p-8 rounded-lg">
+              <p className="text-lg md:text-xl text-gray-600">
+                Aucun participant pour le moment. 
+                <a href="/inscription" className="text-blue-600 hover:underline ml-1">
+                  Soyez le premier à vous inscrire !
+                </a>
+              </p>
             </div>
           )}
         </div>
-
-        {/* 🛠️ DÉVELOPPEMENT : Bouton de test - toujours visible en dev */}
-        {isClient && process.env.NODE_ENV === 'development' && (
-          <div className="mb-6 p-4 bg-yellow-100 border-2 border-yellow-400 rounded-lg max-w-md mx-auto">
-            <h3 className="text-lg font-bold mb-3 text-yellow-800">🛠️ Mode Développement</h3>
-            <button
-              onClick={handleTestAutoDraw}
-              className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded transition-colors font-semibold w-full"
-              disabled={isSpinning || waitingForDraw}
-            >
-              🎯 Tester le tirage automatique
-            </button>
-            <p className="text-sm text-yellow-700 mt-2">
-              Ce bouton n'est visible qu'en mode développement
-            </p>
-            {/* 🔧 NOUVEAU : Indicateur de status Realtime */}
-            <div className="mt-3 text-sm">
-              <span className="text-green-600">📡 Realtime: 
-                {realtimeSubscription ? ' ✅ Connecté' : ' ⏳ Connexion...'}
-              </span>
-            </div>
-          </div>
-        )}
-
-        {isClient && displayedParticipants.length > 0 ? (
-          <div className="mb-6 md:mb-8">
-            {/* 🔧 AMÉLIORÉ : Message d'attente du tirage après countdown */}
-            {waitingForDraw && !isSpinning && !winner && (
-              <div className="mb-6">
-                <div className="bg-orange-500 text-white p-4 md:p-6 rounded-lg">
-                  <h3 className="text-xl md:text-2xl mb-2">⏳ En attente du tirage...</h3>
-                  <p className="text-lg md:text-xl">
-                    Le tirage sera détecté instantanément ! 
-                    <br />
-                    <span className="text-sm opacity-90">📡 Synchronisation temps réel active</span>
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* Animation en cours après détection d'un vrai tirage */}
-            {isSpinning && !winner && (
-              <div className="mb-6">
-                <div className="bg-blue-500 text-white p-4 md:p-6 rounded-lg">
-                  <h3 className="text-xl md:text-2xl mb-2">🎲 Tirage en cours...</h3>
-                  <p className="text-lg md:text-xl">
-                    Le gagnant va être révélé ! 
-                    <br />
-                    <span className="text-sm opacity-90">🔄 Synchronisé avec tous les utilisateurs</span>
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* Message de félicitations */}
-            {!isSpinning && winner && showWinnerMessage && (
-              <div className="mb-6">
-                <div className="bg-dollar-green text-white p-4 md:p-6 rounded-lg">
-                  <h3 className="text-xl md:text-2xl mb-2">🎉 Félicitations !</h3>
-                  <p className="text-lg md:text-xl">
-                    Le gagnant est : <strong>{winner.pseudoinstagram}</strong>
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* Grille des participants */}
-            <PixelGrid
-              participants={displayedParticipants}
-              previousWinners={previousWinners}
-              isSpinning={isSpinning}
-              winner={winner}
-              onStopSpinning={() => setIsSpinning(false)}
-            />
-            
-            {/* Message de réinitialisation */}
-            {!isSpinning && winner && isSaved && (
-              <div className="mt-6">
-                <div className="bg-blue-100 text-blue-800 p-4 rounded-lg">
-                  <p className="text-lg">
-                    Le tirage est terminé ! Les participants seront réinitialisés dans 5 minutes.
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="bg-gray-100 p-6 md:p-8 rounded-lg">
-            <p className="text-lg md:text-xl text-gray-600">
-              Aucun participant pour le moment. 
-              <a href="/inscription" className="text-blue-600 hover:underline ml-1">
-                Soyez le premier à vous inscrire !
-              </a>
-            </p>
-          </div>
-        )}
       </div>
     </Layout>
   )

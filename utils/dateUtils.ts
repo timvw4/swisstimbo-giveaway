@@ -35,4 +35,16 @@ export const isRegistrationOpen = () => {
   const fiveMinutesInMs = 5 * 60 * 1000
 
   return timeUntilDraw > fiveMinutesInMs
+}
+
+export const formatNextDrawDate = () => {
+  const nextDate = getNextDrawDate()
+  const options: Intl.DateTimeFormatOptions = { 
+    weekday: 'long', 
+    day: 'numeric', 
+    month: 'long', 
+    hour: '2-digit', 
+    minute: '2-digit'
+  }
+  return nextDate.toLocaleDateString('fr-FR', options).replace(':', 'h')
 } 

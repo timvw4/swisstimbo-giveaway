@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import Layout from '@/components/Layout'
 import { supabase } from '@/lib/supabaseClient'
 import dynamic from 'next/dynamic'
-import { getNextDrawDate } from '@/utils/dateUtils'
+import { getNextDrawDate, formatNextDrawDate } from '@/utils/dateUtils'
 import Link from 'next/link'
 
 // 🔧 CORRECTION : Interface pour les props du renderer (pas du composant)
@@ -85,8 +85,9 @@ export default function Home() {
             Il suffit d'être abonné pour y participer !
           </p>
           <Link href="/tirage" className="block">
-            <p className="text-base md:text-lg bg-white/10 p-3 rounded underline decoration-1.2 cursor-pointer hover:bg-white/20 transition-colors">
-              Tirages tous les mercredis et dimanches à 20h
+            <p className="text-lg md:text-xl bg-white/20 p-4 rounded-lg font-semibold cursor-pointer hover:bg-white/30 transition-colors">
+              Prochain tirage le <br />
+              <span className="text-yellow-300 font-bold">{formatNextDrawDate()}</span>
             </p>
           </Link>
         </div>
