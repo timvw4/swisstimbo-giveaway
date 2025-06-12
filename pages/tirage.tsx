@@ -534,21 +534,39 @@ export default function Tirage() {
           )}
           
           <div className="mb-6 md:mb-8">
-            <h2 className="text-xl md:text-2xl mb-3 md:mb-4"> Tirage dans :</h2>
-            {isClient && (
-              <div className="text-2xl md:text-3xl font-bold">
-                <Countdown 
-                  date={getNextDrawDate()} 
-                  onComplete={handleCountdownComplete}
-                  renderer={(props: CountdownRenderProps) => (
-                    <span>
-                      {props.days > 0 && `${props.days}j `}
-                      {props.hours}h {props.minutes}m {props.seconds}s
-                    </span>
-                  )}
-                />
-              </div>
-            )}
+            <div className="bg-dollar-green backdrop-blur-md p-4 md:p-6 rounded-lg shadow-md max-w-md mx-auto">
+              <h2 className="text-xl md:text-2xl mb-3 md:mb-4 font-bold text-white">Tirage dans :</h2>
+              {isClient && (
+                <div className="flex justify-center gap-4">
+                  <Countdown 
+                    date={getNextDrawDate()} 
+                    onComplete={handleCountdownComplete}
+                    renderer={(props: CountdownRenderProps) => (
+                      <div className="flex justify-center gap-4">
+                        {props.days > 0 && (
+                          <div className="text-center">
+                            <div className="text-2xl md:text-3xl font-bold text-white">{props.days}</div>
+                            <div className="text-sm text-white/80">jours</div>
+                          </div>
+                        )}
+                        <div className="text-center">
+                          <div className="text-2xl md:text-3xl font-bold text-white">{props.hours}</div>
+                          <div className="text-sm text-white/80">heures</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-2xl md:text-3xl font-bold text-white">{props.minutes}</div>
+                          <div className="text-sm text-white/80">minutes</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-2xl md:text-3xl font-bold text-white">{props.seconds}</div>
+                          <div className="text-sm text-white/80">secondes</div>
+                        </div>
+                      </div>
+                    )}
+                  />
+                </div>
+              )}
+            </div>
           </div>
 
           {/* 🛠️ DÉVELOPPEMENT : Bouton de test - toujours visible en dev */}

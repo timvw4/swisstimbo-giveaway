@@ -55,99 +55,104 @@ export default function Home() {
 
   return (
     <Layout>
-      <div className="max-w-4xl mx-auto text-center px-4">
-        <div className="w-24 h-24 md:w-32 md:h-32 mx-auto mb-6 md:mb-8">
-          <img 
-            src="/images/swisstimbo.jpg"
-            alt="SwissTimbo"
-            className="w-full h-full rounded-full object-cover"
-          />
-        </div>
-        
-        <h1 className="text-3xl md:text-4xl font-bold mb-4 md:mb-6">Swiss Timbo</h1>
-        
-        <div className="bg-dollar-green text-white p-4 md:p-8 rounded-lg mb-6 md:mb-8">
-          {/* 🎯 NOUVEAU : Affichage du gain spécial */}
-          {GAIN_SPECIAL.actif && (
-            <div className="bg-white/20 text-center p-3 md:p-4 rounded-lg mb-4 border-2 border-white/50">
-              <p className="text-lg md:text-xl font-bold animate-pulse">
-                {GAIN_SPECIAL.description}
-              </p>
-              <p className="text-sm md:text-base opacity-90 mt-1">
-                Montant exceptionnel pour ce tirage uniquement !
-              </p>
-            </div>
-          )}
+      <div className="relative min-h-screen bg-white">
+        {/* Contenu */}
+        <div className="max-w-4xl mx-auto text-center px-4">
+          <div className="w-24 h-24 md:w-32 md:h-32 mx-auto mb-6 md:mb-8">
+            <img 
+              src="/images/swisstimbo.jpg"
+              alt="SwissTimbo"
+              className="w-full h-full rounded-full object-cover"
+            />
+          </div>
           
-          <h2 className="text-2xl md:text-3xl mb-3 md:mb-4">Gagnez {montantGain} CHF gratuitement !</h2>
-          <p className="text-lg md:text-xl mb-4 md:mb-6">
-            Participez à notre tirage au sort et tentez de gagner. 
-            Il suffit d'être abonné pour y participer !
-          </p>
-          <Link href="/tirage" className="block">
-            <p className="text-lg md:text-xl bg-white/20 p-4 rounded-lg font-semibold cursor-pointer hover:bg-white/30 transition-colors">
-              Prochain tirage le <br />
-              <span className="text-yellow-300 font-bold">{formatNextDrawDate()}</span>
+          <h1 className="text-3xl md:text-4xl font-bold mb-4 md:mb-6 text-gray-900">Swiss Timbo</h1>
+          
+          <div className="bg-dollar-green text-white p-4 md:p-8 rounded-lg mb-6 md:mb-8">
+            {/* 🎯 NOUVEAU : Affichage du gain spécial */}
+            {GAIN_SPECIAL.actif && (
+              <div className="bg-white/20 text-center p-3 md:p-4 rounded-lg mb-4 border-2 border-white/50">
+                <p className="text-lg md:text-xl font-bold animate-pulse">
+                  {GAIN_SPECIAL.description}
+                </p>
+                <p className="text-sm md:text-base opacity-90 mt-1">
+                  Montant exceptionnel pour ce tirage uniquement !
+                </p>
+              </div>
+            )}
+            
+            <h2 className="text-2xl md:text-3xl mb-3 md:mb-4">Gagnez {montantGain} CHF gratuitement !</h2>
+            <p className="text-lg md:text-xl mb-4 md:mb-6">
+              Participez à notre tirage au sort et tentez de gagner. 
+              Il suffit d'être abonné pour y participer !
             </p>
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8 mb-6 md:mb-8">
-          <div className="bg-light-gray p-4 md:p-6 rounded-lg">
-            <h3 className="text-xl md:text-2xl font-bold mb-2">{participantCount}</h3>
-            <p>Participants</p>
+            <p className="text-lg md:text-xl mb-4">
+              Prochain tirage le
+            </p>
+            <Link href="/tirage" className="block">
+              <p className="text-lg md:text-xl bg-white/20 p-4 rounded-lg font-semibold cursor-pointer hover:bg-white/30 transition-colors">
+                <span className="text-yellow-300 font-bold underline decoration-2">{formatNextDrawDate()}</span>
+              </p>
+            </Link>
           </div>
-          
-          <div className="bg-light-gray p-4 md:p-6 rounded-lg">
-            <h3 className="text-xl md:text-2xl font-bold mb-2">{montantGain} CHF</h3>
-            <p>À gagner</p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8 mb-6 md:mb-8">
+            <div className="bg-gray-100/95 backdrop-blur-md p-4 md:p-6 rounded-lg shadow-md">
+              <h3 className="text-xl md:text-2xl font-bold mb-2">{participantCount}</h3>
+              <p>Participants</p>
+            </div>
+            
+            <div className="bg-gray-100/95 backdrop-blur-md p-4 md:p-6 rounded-lg shadow-md">
+              <h3 className="text-xl md:text-2xl font-bold mb-2">{montantGain} CHF</h3>
+              <p>À gagner</p>
+            </div>
+            
+            <div className="bg-gray-100/95 backdrop-blur-md p-4 md:p-6 rounded-lg shadow-md">
+              <h3 className="text-xl md:text-2xl font-bold mb-2">
+                <Countdown 
+                  date={getNextDrawDate()}
+                  renderer={(props: CountdownRenderProps) => (
+                    <span>
+                      {props.days > 0 && `${props.days}j `}
+                      {props.hours}h {props.minutes}m {props.seconds}s
+                    </span>
+                  )}
+                />
+              </h3>
+              <p>Avant le prochain tirage</p>
+            </div>
           </div>
-          
-          <div className="bg-light-gray p-4 md:p-6 rounded-lg">
-            <h3 className="text-xl md:text-2xl font-bold mb-2">
-              <Countdown 
-                date={getNextDrawDate()}
-                renderer={(props: CountdownRenderProps) => (
-                  <span>
-                    {props.days > 0 && `${props.days}j `}
-                    {props.hours}h {props.minutes}m {props.seconds}s
-                  </span>
-                )}
-              />
-            </h3>
-            <p>Avant le prochain tirage</p>
-          </div>
-        </div>
 
-        <a 
-          href="/inscription" 
-          className="inline-block bg-dollar-green text-white px-6 md:px-8 py-3 md:py-4 rounded-lg text-lg md:text-xl hover:bg-opacity-90 transition w-full md:w-auto mb-12"
-        >
-          Participer maintenant
-        </a>
+          <a 
+            href="/inscription" 
+            className="inline-block bg-dollar-green text-white px-6 md:px-8 py-3 md:py-4 rounded-lg text-lg md:text-xl hover:bg-opacity-90 transition w-full md:w-auto mb-12"
+          >
+            Participer maintenant
+          </a>
 
-        <div className="mt-12 text-left">
-          <h2 className="text-2xl md:text-3xl font-bold mb-6 text-center">Questions fréquentes</h2>
-          
-          <div className="space-y-6">
-            <div className="bg-gray-50 p-4 md:p-6 rounded-lg">
-              <h3 className="text-lg md:text-xl font-bold mb-2">Comment participer ?</h3>
-              <p>Il suffit d'être abonné à @swiss.timbo sur Instagram et de s'inscrire sur le site. C'est gratuit et sans engagement !</p>
-            </div>
+          <div className="mt-12 text-left">
+            <h2 className="text-2xl md:text-3xl font-bold mb-6 text-center">Questions fréquentes</h2>
+            
+            <div className="space-y-6">
+              <div className="bg-gray-50 p-4 md:p-6 rounded-lg">
+                <h3 className="text-lg md:text-xl font-bold mb-2">Comment participer ?</h3>
+                <p>Il suffit d'être abonné à @swiss.timbo sur Instagram et de s'inscrire sur le site. C'est gratuit et sans engagement !</p>
+              </div>
 
-            <div className="bg-gray-50 p-4 md:p-6 rounded-lg">
-              <h3 className="text-lg md:text-xl font-bold mb-2">Quand ont lieu les tirages ?</h3>
-              <p>Les tirages ont lieu tous les mercredis et dimanches à 20h précises.</p>
-            </div>
+              <div className="bg-gray-50 p-4 md:p-6 rounded-lg">
+                <h3 className="text-lg md:text-xl font-bold mb-2">Quand ont lieu les tirages ?</h3>
+                <p>Les tirages ont lieu tous les mercredis et dimanches à 20h précises.</p>
+              </div>
 
-            <div className="bg-gray-50 p-4 md:p-6 rounded-lg">
-              <h3 className="text-lg md:text-xl font-bold mb-2">Comment sont versés les gains ?</h3>
-              <p>Les gains sont versés par Twint ou en cash via la Poste Suisse dans les 7 jours suivant le tirage.</p>
-            </div>
+              <div className="bg-gray-50 p-4 md:p-6 rounded-lg">
+                <h3 className="text-lg md:text-xl font-bold mb-2">Comment sont versés les gains ?</h3>
+                <p>Les gains sont versés par Twint ou en cash via la Poste Suisse dans les 7 jours suivant le tirage.</p>
+              </div>
 
-            <div className="bg-gray-50 p-4 md:p-6 rounded-lg">
-              <h3 className="text-lg md:text-xl font-bold mb-2">Qui peut participer ?</h3>
-              <p>Toute personne majeure (18 ans ou plus) et abonnée à @swiss.timbo peut participer.</p>
+              <div className="bg-gray-50 p-4 md:p-6 rounded-lg">
+                <h3 className="text-lg md:text-xl font-bold mb-2">Qui peut participer ?</h3>
+                <p>Toute personne majeure (18 ans ou plus) et abonnée à @swiss.timbo peut participer.</p>
+              </div>
             </div>
           </div>
         </div>
