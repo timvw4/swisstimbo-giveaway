@@ -98,11 +98,11 @@ const PixelGrid: React.FC<PixelGridProps> = ({
         </div>
       )}
 
-      <div 
-        className={`grid gap-2 md:gap-4`}
-        style={{ 
-          gridTemplateColumns: `repeat(${columns}, 1fr)`,
-        }}
+              <div 
+          className={`grid gap-2 md:gap-4 justify-center`}
+          style={{ 
+            gridTemplateColumns: `repeat(${columns}, 1fr)`,
+          }}
       >
         {participants.map((participant, index) => (
           <div
