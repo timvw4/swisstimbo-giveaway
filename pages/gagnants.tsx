@@ -80,41 +80,59 @@ export default function Gagnants() {
           </div>
         </div>
 
-        <div className="max-w-full overflow-x-auto">
-          <div className="inline-block min-w-full align-middle">
-            <div className="bg-white rounded-lg shadow">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-dollar-green rounded-t-lg">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider rounded-tl-lg">
-                      Pseudo Instagram
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                      Montant gagné
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider rounded-tr-lg">
-                      Date du tirage
-                    </th>
+        {/* Version desktop - tableau */}
+        <div className="hidden md:block">
+          <div className="bg-white rounded-lg shadow overflow-hidden">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-dollar-green">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                    Pseudo Instagram
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                    Montant gagné
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                    Date du tirage
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {winners.map((winner) => (
+                  <tr key={winner.id}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {winner.pseudoinstagram}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {winner.montant} CHF
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-500">
+                      {formatDrawDate(winner.draw_date)}
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {winners.map((winner) => (
-                    <tr key={winner.id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {winner.pseudoinstagram}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {winner.montant} CHF
-                      </td>
-                      <td className="px-4 md:px-6 py-4 text-sm text-gray-500 min-w-[120px] whitespace-pre-line break-words">
-                        {formatDrawDate(winner.draw_date)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </table>
           </div>
+        </div>
+
+        {/* Version mobile - cartes */}
+        <div className="md:hidden space-y-4">
+          {winners.map((winner) => (
+            <div key={winner.id} className="bg-white rounded-lg shadow p-4">
+              <div className="flex justify-between items-start mb-2">
+                <h3 className="font-semibold text-gray-900 text-sm">
+                  {winner.pseudoinstagram}
+                </h3>
+                <span className="bg-dollar-green text-white px-2 py-1 rounded text-sm font-bold">
+                  {winner.montant} CHF
+                </span>
+              </div>
+              <p className="text-xs text-gray-500">
+                {formatDrawDate(winner.draw_date)}
+              </p>
+            </div>
+          ))}
         </div>
       </div>
     </Layout>
