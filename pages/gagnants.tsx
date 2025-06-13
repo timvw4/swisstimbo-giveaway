@@ -11,6 +11,8 @@ interface Winner {
 
 export default function Gagnants() {
   const [winners, setWinners] = useState<Winner[]>([])
+  const [totalParticipants, setTotalParticipants] = useState<number>(0)
+  const [totalAmountGiven, setTotalAmountGiven] = useState<number>(0)
 
   // Fonction pour formater la date
   const formatDrawDate = (dateString: string) => {
@@ -22,23 +24,41 @@ export default function Gagnants() {
   }
 
   useEffect(() => {
-    const fetchWinners = async () => {
-      const { data, error } = await supabase
+    const fetchData = async () => {
+      // Récupérer les gagnants
+      const { data: winnersData, error: winnersError } = await supabase
         .from('winners')
         .select('*')
         .order('draw_date', { ascending: false })
 
-      if (error) {
-        console.error('Erreur lors de la récupération des gagnants:', error)
+      if (winnersError) {
+        console.error('Erreur lors de la récupération des gagnants:', winnersError)
         return
       }
 
-      if (data) {
-        setWinners(data)
+      if (winnersData) {
+        setWinners(winnersData)
+        // Calculer le montant total donné
+        const total = winnersData.reduce((sum, winner) => sum + winner.montant, 0)
+        setTotalAmountGiven(total)
+      }
+
+      // Récupérer le nombre total de participants
+      const { count, error: participantsError } = await supabase
+        .from('participants_history')
+        .select('*', { count: 'exact', head: true })
+
+      if (participantsError) {
+        console.error('Erreur lors de la récupération du nombre de participants:', participantsError)
+        return
+      }
+
+      if (count !== null) {
+        setTotalParticipants(count)
       }
     }
 
-    fetchWinners()
+    fetchData()
   }, [])
 
   return (
@@ -47,6 +67,18 @@ export default function Gagnants() {
         <h1 className="text-2xl md:text-4xl font-bold mb-6 md:mb-8 text-center">
           Historique des Gagnants
         </h1>
+
+        {/* Statistiques générales */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+          <div className="bg-gradient-to-r from-dollar-green to-green-600 rounded-lg p-6 text-white">
+            <h3 className="text-lg font-semibold mb-2">Total des participants</h3>
+            <p className="text-3xl font-bold">{totalParticipants.toLocaleString()}</p>
+          </div>
+          <div className="bg-gradient-to-r from-dollar-green to-yellow-600 rounded-lg p-6 text-white">
+            <h3 className="text-lg font-semibold mb-2">Montant total distribué</h3>
+            <p className="text-3xl font-bold">{totalAmountGiven.toLocaleString()} CHF</p>
+          </div>
+        </div>
 
         <div className="max-w-full overflow-x-auto">
           <div className="inline-block min-w-full align-middle">

@@ -225,6 +225,16 @@ export default function Layout({
         
         <footer className="bg-light-gray p-4 mt-8">
           <div className="container mx-auto text-center text-sm md:text-base">
+            <div className="mt-2">
+              <a 
+                href="https://instagram.com/swiss.timbo" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-dollar-green hover:text-red-700 transition-colors font-medium underline"
+              >
+                📸 Suivez-nous sur @swiss.timbo
+              </a>
+            </div>
             <p>© 2025 Swiss Timbo - Tous droits réservés</p>
           </div>
         </footer>
