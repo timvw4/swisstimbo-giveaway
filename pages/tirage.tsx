@@ -525,7 +525,7 @@ export default function Tirage() {
                 {GAIN_SPECIAL.description}
               </p>
               <p className="text-lg md:text-xl font-semibold">
-                🎁 {GAIN_SPECIAL.montant} CHF à gagner ce soir !
+                🎁 {GAIN_SPECIAL.montant} CHF à gagner ce mercredi !
               </p>
               <p className="text-sm md:text-base opacity-90 mt-2">
                 Montant exceptionnel pour ce tirage uniquement
