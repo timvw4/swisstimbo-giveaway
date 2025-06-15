@@ -28,9 +28,9 @@ export default function Home() {
   
   // 🎯 NOUVEAU : Configuration pour gain spécial (doit correspondre à l'API)
   const GAIN_SPECIAL = {
-    actif: false, // ✨ Mettre à false pour revenir au gain normal
-    montant: 40, // 💰 Montant du gain spécial
-    description: "🎉 TIRAGE SPÉCIAL - GAIN DOUBLÉ !"
+    actif: true, // ✨ Mettre à false pour revenir au gain normal
+    montant: 50, // 💰 Montant du gain spécial
+    description: "🎉 TIRAGE SPÉCIAL - 50 CHF Zalando !"
   }
   
   const montantGain = GAIN_SPECIAL.actif ? GAIN_SPECIAL.montant : 20 // Montant en CHF

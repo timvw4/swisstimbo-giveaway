@@ -67,9 +67,9 @@ export default function Tirage() {
   
   // 🎯 NOUVEAU : Configuration pour gain spécial (doit correspondre à l'API et index.tsx)
   const GAIN_SPECIAL = {
-    actif: false, // ✨ Mettre à false pour revenir au gain normal
-    montant: 40, // 💰 Montant du gain spécial
-    description: "🎉 TIRAGE SPÉCIAL - GAIN DOUBLÉ !"
+    actif: true, // ✨ Mettre à false pour revenir au gain normal
+    montant: 50, // 💰 Montant du gain spécial
+    description: "🎉 TIRAGE SPÉCIAL - 50 CHF Zalando !"
   }
   
   // 🔧 NOUVEAU : Refs pour accéder aux valeurs actuelles sans dépendances circulaires
