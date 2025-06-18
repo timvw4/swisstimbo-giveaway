@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import Head from 'next/head'
-import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useSessionTracking } from '@/hooks/useSessionTracking'
 import { Analytics } from '@vercel/analytics/next'
@@ -13,10 +12,9 @@ interface LayoutProps {
 
 export default function Layout({ 
   children, 
-  title = "Swiss Timbo - Tirage au sort gratuit",
-  description = "Participez gratuitement et gagnez 20 CHF ! Tirages tous les mercredis et dimanches à 20h. Inscription simple et rapide."
+  title = "Swiss Timbo - Site en transition",
+  description = "SwissTimbo prépare la première loterie gratuite de Suisse romande. Site en transition - Tirages temporairement suspendus."
 }: LayoutProps) {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
   // 🔐 NOUVEAU : État pour le compteur admin caché
   const [adminClickCount, setAdminClickCount] = useState(0)
   const router = useRouter()
@@ -24,7 +22,7 @@ export default function Layout({
   // 🔧 NOUVEAU : Activer le tracking de session pour tous les utilisateurs
   useSessionTracking()
   
-  // 🔐 MODIFIÉ : Fonction pour gérer la redirection admin cachée ET la navigation vers l'accueil
+  // 🔐 MODIFIÉ : Fonction pour gérer la redirection admin cachée
   const handleLogoClick = () => {
     setAdminClickCount(prev => {
       const newCount = prev + 1
@@ -33,20 +31,6 @@ export default function Layout({
         // Redirection directe vers l'admin
         router.push('/admin')
         return 0
-      }
-      
-      // Si c'est le premier clic, programmer la redirection vers l'accueil
-      if (newCount === 1) {
-        setTimeout(() => {
-          // Vérifier qu'on n'a pas eu d'autres clics entre temps
-          setAdminClickCount(currentCount => {
-            if (currentCount === 1) {
-              router.push('/')
-              return 0
-            }
-            return currentCount
-          })
-        }, 500) // Attendre 500ms pour voir s'il y a d'autres clics
       }
       
       // Reset après 2 secondes d'inactivité
@@ -123,97 +107,13 @@ export default function Layout({
       <div className="min-h-screen bg-white font-old-style">
         <nav className="bg-dollar-green text-white p-4">
           <div className="container mx-auto">
-            <div className="flex justify-between items-center">
+            <div className="flex justify-center items-center">
               <div 
                 className="text-xl md:text-2xl font-bold cursor-pointer select-none hover:text-light-gray"
                 onClick={handleLogoClick}
                 title="Cliquez 5 fois rapidement pour accéder aux options avancées"
               >
                 @Swiss.Timbo
-              </div>
-              
-              {/* Bouton menu hamburger pour mobile */}
-              <button 
-                className="md:hidden"
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  {isMenuOpen ? (
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  ) : (
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                  )}
-                </svg>
-              </button>
-
-              {/* Menu desktop */}
-              <div className="hidden md:flex space-x-4">
-                <Link href="/" className="hover:text-light-gray">
-                  Accueil
-                </Link>
-                <Link href="/inscription" className="hover:text-light-gray">
-                  Inscription
-                </Link>
-                <Link href="/tirage" className="hover:text-light-gray">
-                  Tirage
-                </Link>
-                <Link href="/gagnants" className="hover:text-light-gray">
-                  Gagnants
-                </Link>
-                <Link href="/about" className="hover:text-light-gray">
-                  À propos
-                </Link>
-                <Link href="/reglement" className="hover:text-light-gray">
-                  Règlement
-                </Link>
-              </div>
-            </div>
-
-            {/* Menu mobile */}
-            <div className={`${isMenuOpen ? 'block' : 'hidden'} md:hidden mt-4`}>
-              <div className="flex flex-col space-y-2">
-                <Link 
-                  href="/" 
-                  className="hover:text-light-gray py-2"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Accueil
-                </Link>
-                <Link 
-                  href="/inscription" 
-                  className="hover:text-light-gray py-2"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Inscription
-                </Link>
-                <Link 
-                  href="/tirage" 
-                  className="hover:text-light-gray py-2"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Tirages
-                </Link>
-                <Link 
-                  href="/gagnants" 
-                  className="hover:text-light-gray py-2"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Gagnants
-                </Link>
-                <Link 
-                  href="/about" 
-                  className="hover:text-light-gray py-2"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  À propos
-                </Link>
-                <Link 
-                  href="/reglement" 
-                  className="hover:text-light-gray py-2"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Règlement
-                </Link>
               </div>
             </div>
           </div>

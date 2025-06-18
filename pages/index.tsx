@@ -1,159 +1,178 @@
 import React, { useEffect, useState } from 'react'
 import Layout from '@/components/Layout'
 import { supabase } from '@/lib/supabaseClient'
-import dynamic from 'next/dynamic'
-import { getNextDrawDate, formatNextDrawDate } from '@/utils/dateUtils'
-import Link from 'next/link'
 
-// 🔧 CORRECTION : Interface pour les props du renderer (pas du composant)
-interface CountdownRenderProps {
-  days: number
-  hours: number
-  minutes: number
-  seconds: number
+interface Winner {
+  id: string
+  participant_id: string
+  pseudoinstagram: string
+  draw_date: string
+  montant: number
 }
-
-// 🔧 CORRECTION : Interface pour le composant Countdown complet
-interface CountdownProps {
-  date: Date | number
-  renderer: (props: CountdownRenderProps) => JSX.Element
-}
-
-const Countdown = dynamic<CountdownProps>(() => import('react-countdown'), {
-  ssr: false
-})
 
 export default function Home() {
-  const [participantCount, setParticipantCount] = useState<number>(0)
-  
-  // 🎯 NOUVEAU : Configuration pour gain spécial (doit correspondre à l'API)
-  const GAIN_SPECIAL = {
-    actif: true, // ✨ Mettre à false pour revenir au gain normal
-    montant: 50, // 💰 Montant du gain spécial
-    description: "🎉 TIRAGE SPÉCIAL - 50 CHF Zalando !"
-  }
-  
-  const montantGain = GAIN_SPECIAL.actif ? GAIN_SPECIAL.montant : 20 // Montant en CHF
-  
+  const [winners, setWinners] = useState<Winner[]>([])
+  const [loading, setLoading] = useState(true)
+
   useEffect(() => {
-    const fetchParticipantCount = async () => {
-      const { count } = await supabase
-        .from('participants')
-        .select('*', { count: 'exact' })
-      
-      setParticipantCount(count || 0)
+    const fetchWinners = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('winners')
+          .select('*')
+          .order('draw_date', { ascending: false })
+
+        if (error) {
+          console.error('Erreur lors du chargement des gagnants:', error)
+        } else {
+          setWinners(data || [])
+        }
+      } catch (error) {
+        console.error('Erreur:', error)
+      } finally {
+        setLoading(false)
+      }
     }
 
-    // Mise à jour initiale
-    fetchParticipantCount()
-
-    // Mise à jour en temps réel toutes les 10 secondes
-    const interval = setInterval(fetchParticipantCount, 10000)
-
-    return () => clearInterval(interval)
+    fetchWinners()
   }, [])
+
+  // Fonction pour formater la date
+  const formatDrawDate = (dateString: string) => {
+    const date = new Date(dateString)
+    const jours = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi']
+    const mois = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre']
+    
+    return `${jours[date.getDay()]} ${date.getDate()} ${mois[date.getMonth()]} ${date.getFullYear()}`
+  }
 
   return (
     <Layout>
-      <div className="relative min-h-screen bg-white">
-        {/* Contenu */}
-        <div className="max-w-4xl mx-auto text-center px-4">
-          <div className="w-24 h-24 md:w-32 md:h-32 mx-auto mb-6 md:mb-8">
-            <img 
-              src="/images/swisstimbo.jpg"
-              alt="SwissTimbo"
-              className="w-full h-full rounded-full object-cover"
-            />
+      <div className="relative min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
+        {/* En-tête avec logo */}
+        <div className="max-w-6xl mx-auto px-4 py-8">
+          <div className="text-center mb-12">
+            <div className="w-24 h-24 md:w-32 md:h-32 mx-auto mb-6">
+              <img 
+                src="/images/swisstimbo.jpg"
+                alt="SwissTimbo"
+                className="w-full h-full rounded-full object-cover shadow-lg"
+              />
+            </div>
+            
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900">
+              Swiss Timbo
+            </h1>
+            
+            <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-8 rounded-lg">
+              <p className="text-lg font-semibold">
+                ⚠️ Site en transition - Tirages temporairement suspendus
+              </p>
+            </div>
           </div>
-          
-          <h1 className="text-3xl md:text-4xl font-bold mb-4 md:mb-6 text-gray-900">Swiss Timbo</h1>
-          
-          <div className="bg-dollar-green text-white p-4 md:p-8 rounded-lg mb-6 md:mb-8">
-            {/* 🎯 NOUVEAU : Affichage du gain spécial */}
-            {GAIN_SPECIAL.actif && (
-              <div className="bg-white/20 text-center p-3 md:p-4 rounded-lg mb-4 border-2 border-white/50">
-                <p className="text-lg md:text-xl font-bold animate-pulse">
-                  {GAIN_SPECIAL.description}
+
+          {/* Message principal */}
+          <div className="bg-white rounded-xl shadow-xl p-8 mb-12 border border-gray-200">
+            <div className="text-center">
+              <h2 className="text-3xl md:text-4xl font-bold mb-6 text-gray-900">
+                🎉 Nouvelle ère SwissTimbo en préparation !
+              </h2>
+              
+              <div className="space-y-6 text-lg text-gray-700">
+                <p>
+                  <strong>Cher(e)s participant(e)s,</strong>
                 </p>
-                <p className="text-sm md:text-base opacity-90 mt-1">
-                  Montant exceptionnel pour ce tirage uniquement !
+                
+                <p>
+                  Nous sommes ravis de vous annoncer que nous préparons actuellement <br />
+                  <span className="font-bold text-red-600"> la première loterie gratuite de Suisse</span> !
+                </p>
+                
+                <div className="bg-green-50 border border-green-200 rounded-lg p-6 my-6">
+                  <h3 className="text-xl font-bold text-green-800 mb-3">
+                    🚀 Ce qui vous attend :
+                  </h3>
+                  <ul className="text-left space-y-2 text-green-700">
+                    <li>• <strong>Nouveau site web</strong> moderne et intuitif</li>
+                    <li>• <strong>Première loterie gratuite</strong> de Suisse</li>
+                    <li>• <strong>Expérience utilisateur</strong> améliorée</li>
+                    <li>• <strong>Gains cummulables</strong> pouvant aller jusqu'à une centaine de francs</li>
+                  </ul>
+                </div>
+                
+                <p>
+                  <strong>Les tirages sont temporairement suspendus</strong> pendant cette période de transition. 
+                  Nous vous remercions pour votre patience et votre fidélité.
+                </p>
+                
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mt-6">
+                  <p className="text-blue-800 font-semibold mb-3">
+                    📢 Restez connectés sur Instagram pour être informés du lancement !
+                  </p>
+                  <div className="text-center">
+                    <a 
+                      href="https://instagram.com/swiss.timbo" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-red-600 hover:text-red-600/80 underline font-bold text-lg"
+                    >
+                      @swiss.timbo
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Section des gagnants */}
+          <div className="bg-white rounded-xl shadow-xl p-8 border border-gray-200">
+            <h2 className="text-3xl font-bold text-center mb-8 text-gray-900">
+              🏆 Historique des Gagnants
+            </h2>
+            
+            {loading ? (
+              <div className="text-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto"></div>
+                <p className="mt-4 text-gray-600">Chargement des gagnants...</p>
+              </div>
+            ) : winners.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {winners.map((winner) => (
+                  <div 
+                    key={winner.id} 
+                    className="bg-gradient-to-br from-green-100 to-blue-100 p-6 rounded-lg shadow-md border-2 border-green-300"
+                  >
+                    <div className="text-center">
+                      <div className="text-2xl mb-2">
+                        🏆
+                      </div>
+                      <h3 className="text-xl font-bold mb-2 text-gray-900">
+                        {winner.pseudoinstagram}
+                      </h3>
+                      <div className="text-3xl font-bold text-green-600 mb-2">
+                        {winner.montant} CHF
+                      </div>
+                      <p className="text-sm text-gray-600">
+                        {formatDrawDate(winner.draw_date)}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-gray-600 text-lg">
+                  Aucun gagnant enregistré pour le moment.
                 </p>
               </div>
             )}
-            
-            <h2 className="text-2xl md:text-3xl mb-3 md:mb-4">Gagnez {montantGain} CHF gratuitement !</h2>
-            <p className="text-lg md:text-xl mb-4 md:mb-6">
-              Participez à notre tirage au sort et tentez de gagner. 
-              Il suffit d'être abonné pour y participer !
-            </p>
-            <p className="text-lg md:text-xl mb-4">
-              Prochain tirage le
-            </p>
-            <Link href="/tirage" className="block">
-              <p className="text-lg md:text-xl bg-white/20 p-4 rounded-lg font-semibold cursor-pointer hover:bg-white/30 transition-colors">
-                <span className="text-white font-bold underline decoration-2">{formatNextDrawDate()}</span>
-              </p>
-            </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8 mb-6 md:mb-8">
-            <div className="bg-gray-100/95 backdrop-blur-md p-4 md:p-6 rounded-lg shadow-md">
-              <h3 className="text-xl md:text-2xl font-bold mb-2">{participantCount}</h3>
-              <p>Participants</p>
-            </div>
-            
-            <div className="bg-gray-100/95 backdrop-blur-md p-4 md:p-6 rounded-lg shadow-md">
-              <h3 className="text-xl md:text-2xl font-bold mb-2">{montantGain} CHF</h3>
-              <p>À gagner</p>
-            </div>
-            
-            <div className="bg-gray-100/95 backdrop-blur-md p-4 md:p-6 rounded-lg shadow-md">
-              <h3 className="text-xl md:text-2xl font-bold mb-2">
-                <Countdown 
-                  date={getNextDrawDate()}
-                  renderer={(props: CountdownRenderProps) => (
-                    <span>
-                      {props.days > 0 && `${props.days}j `}
-                      {props.hours}h {props.minutes}m {props.seconds}s
-                    </span>
-                  )}
-                />
-              </h3>
-              <p>Avant le prochain tirage</p>
-            </div>
-          </div>
-
-          <a 
-            href="/inscription" 
-            className="inline-block bg-dollar-green text-white px-6 md:px-8 py-3 md:py-4 rounded-lg text-lg md:text-xl hover:bg-opacity-90 transition w-full md:w-auto mb-12"
-          >
-            Participer maintenant
-          </a>
-
-          <div className="mt-12 text-left">
-            <h2 className="text-2xl md:text-3xl font-bold mb-6 text-center">Questions fréquentes</h2>
-            
-            <div className="space-y-6">
-              <div className="bg-gray-50 p-4 md:p-6 rounded-lg">
-                <h3 className="text-lg md:text-xl font-bold mb-2">Comment participer ?</h3>
-                <p>Il suffit d'être abonné à @swiss.timbo sur Instagram et de s'inscrire sur le site. C'est gratuit et sans engagement !</p>
-              </div>
-
-              <div className="bg-gray-50 p-4 md:p-6 rounded-lg">
-                <h3 className="text-lg md:text-xl font-bold mb-2">Quand ont lieu les tirages ?</h3>
-                <p>Les tirages ont lieu tous les mercredis et dimanches à 20h précises.</p>
-              </div>
-
-              <div className="bg-gray-50 p-4 md:p-6 rounded-lg">
-                <h3 className="text-lg md:text-xl font-bold mb-2">Comment sont versés les gains ?</h3>
-                <p>Les gains sont versés par Twint ou en cash via la Poste Suisse dans les 7 jours suivant le tirage.</p>
-              </div>
-
-              <div className="bg-gray-50 p-4 md:p-6 rounded-lg">
-                <h3 className="text-lg md:text-xl font-bold mb-2">Qui peut participer ?</h3>
-                <p>Toute personne majeure (18 ans ou plus) et abonnée à @swiss.timbo peut participer.</p>
-              </div>
-            </div>
+          {/* Footer */}
+          <div className="text-center mt-12 text-gray-600">
+            <p className="mb-4">
+              Merci à tous nos participants pour leur confiance !
+            </p>
           </div>
         </div>
       </div>
