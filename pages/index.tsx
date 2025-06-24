@@ -88,15 +88,15 @@ export default function Home() {
                   <span className="font-bold text-red-600"> la première loterie gratuite de Suisse</span> !
                 </p>
                 
-                <div className="bg-green-50 border border-green-200 rounded-lg p-6 my-6">
-                  <h3 className="text-xl font-bold text-green-800 mb-3">
+                <div className="bg-gradient-to-r from-green-700 to-green-400 border-2 border-green-600 rounded-lg p-6 my-6">
+                  <h3 className="text-xl font-bold text-white mb-3">
                     🚀 Ce qui vous attend :
                   </h3>
-                  <ul className="text-left space-y-2 text-green-700">
+                  <ul className="text-left space-y-2 text-white">
                     <li>• <strong>Nouveau site web</strong> moderne et intuitif</li>
-                    <li>• <strong>Première loterie gratuite</strong> de Suisse</li>
+                    <li>• <strong>Première loterie gratuite</strong> de Suisse romande</li>
                     <li>• <strong>Expérience utilisateur</strong> améliorée</li>
-                    <li>• <strong>Gains cummulables</strong> pouvant aller jusqu'à une centaine de francs</li>
+                    <li>• <strong>Plus de tirages</strong> et de gains à gagner</li>
                   </ul>
                 </div>
                 
@@ -105,8 +105,8 @@ export default function Home() {
                   Nous vous remercions pour votre patience et votre fidélité.
                 </p>
                 
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mt-6">
-                  <p className="text-blue-800 font-semibold mb-3">
+                <div className="bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 border-2 border-purple-400 rounded-lg p-6 mt-6">
+                  <p className="text-white font-semibold mb-3">
                     📢 Restez connectés sur Instagram pour être informés du lancement !
                   </p>
                   <div className="text-center">
@@ -114,7 +114,7 @@ export default function Home() {
                       href="https://instagram.com/swiss.timbo" 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="text-red-600 hover:text-red-600/80 underline font-bold text-lg"
+                      className="text-white hover:text-gray-100 underline font-bold text-lg"
                     >
                       @swiss.timbo
                     </a>
